@@ -1,8 +1,11 @@
 # Akash's Neovim Config
 
-A modern, visual-first Neovim setup for Windows with a transparent Catppuccin look, a custom Alpha dashboard, floating terminal workflow, file explorer, Telescope search, LSP, autoformatting, and frontend-friendly utilities such as Markdown Preview and Live Server.
+A modern, visual-first Neovim setup for Windows & Linux with a transparent Catppuccin look, a custom Alpha dashboard, floating terminal workflow, file explorer, Telescope search, LSP, autoformatting, and frontend-friendly utilities such as Markdown Preview and Live Server.
 
 This repository is designed to be cloned directly into the Neovim config directory and used as a personal daily-driver configuration. The layout is modular, easy to edit, and built with `lazy.nvim` for plugin management and reproducible installs through a lockfile.
+
+> **NOTE :**
+> This config is currently developed on Windows, but it can also be used on Linux with small platform-specific adjustments such as the terminal shell settings.
 
 ## Preview
 
@@ -19,7 +22,7 @@ Suggested screenshots to add to the repository:
 
 Once screenshots are added, this section can be updated like this:
 
-```md
+
 ## Preview
 
 ### Dashboard
@@ -36,7 +39,7 @@ Once screenshots are added, this section can be updated like this:
 
 ### Floating Terminal
 ![Floating Terminal](./screenshots/terminal.png)
-```
+
 
 ## Features
 
@@ -48,7 +51,7 @@ Once screenshots are added, this section can be updated like this:
 - LSP support through `mason.nvim`, `mason-lspconfig.nvim`, and `nvim-lspconfig`.
 - Autocompletion using `nvim-cmp` and `cmp-nvim-lsp`.
 - Formatting on save using `conform.nvim` with Prettier and Stylua.
-- Floating terminal using `toggleterm.nvim` configured to launch PowerShell on Windows.
+- Floating terminal using `toggleterm.nvim`, currently configured for PowerShell on Windows and easily adjustable for Linux shells.
 - Smooth scrolling, smooth cursor animation, inline diagnostics, git signs, git blame, notifications, and Noice UI enhancements.
 - Markdown live preview and simple live server integration for HTML/CSS/JS work.
 
@@ -147,10 +150,17 @@ Before using this setup, install the following tools on Windows:
 
 - Neovim
 - Git
-- PowerShell (`pwsh`) because the terminal configuration explicitly uses `pwsh -NoLogo`.
 - Node.js and npm because `markdown-preview.nvim` runs `npm install` in its app directory during setup.
 - A Nerd Font so dashboard icons, devicons, and UI glyphs render correctly
 - Optional but recommended: `prettier` and `stylua` support through Mason or local tooling, depending on workflow.
+
+#### Windows
+- PowerShell (`pwsh`) because the terminal configuration explicitly uses `pwsh -NoLogo`.
+
+#### Linux
+- A working shell such as `bash`, `zsh`, or `fish`
+- Clipboard support tools may be needed depending on the system
+- On Debian-based systems, install `xclip` or `wl-clipboard` if clipboard integration does not work
 
 ## Installation
 
@@ -174,15 +184,58 @@ git clone https://github.com/<your-username>/<your-repo>.git "$env:LOCALAPPDATA\
 nvim
 ```
 
-4. Wait for `lazy.nvim` to install plugins on first launch. This config bootstraps the plugin manager automatically if it is missing.
+### Linux
 
-5. Run health checks after the first install.
+1. Back up any existing Neovim config.
+
+```bash
+mv ~/.config/nvim ~/.config/nvim.backup
+```
+
+2. Clone this repository into the Neovim config directory.
+
+```bash
+git clone https://github.com/<your-username>/<your-repo>.git ~/.config/nvim
+```
+
+3. Start Neovim.
+
+```bash
+nvim
+```
+### After first launch
+
+1. Wait for `lazy.nvim` to install plugins on first launch. This config bootstraps the plugin manager automatically if it is missing.
+
+2. Run health checks after the first install.
 
 ```vim
 :checkhealth
 :Mason
 :Lazy
 ```
+
+## Linux shell note
+
+The floating terminal is currently configured with:
+
+```lua
+shell = "pwsh -NoLogo"
+```
+
+That works well on Windows, but Linux users may want to change it to:
+
+```lua
+shell = "bash"
+```
+
+or:
+
+```lua
+shell = "zsh"
+```
+
+This setting is inside `lua/plugins/init.lua`.
 
 ## First-Run Notes
 
