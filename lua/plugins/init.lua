@@ -127,15 +127,16 @@ require("lazy").setup({
 		ft = { "markdown" },
 	},
 	{ "barrett-ruth/live-server.nvim", cmd = { "LiveServerStart", "LiveServerStop" } },
-	{ "stevearc/oil.nvim", 
-  opts = {
-    default_file_explorer = false,
+	{
+		"stevearc/oil.nvim",
+		opts = {
+			default_file_explorer = false,
 
-    view_options = {
-      show_hidden = true,
-    }
-  }
-},
+			view_options = {
+				show_hidden = true,
+			},
+		},
+	},
 
 	--------------------------------------------------
 	-- 🌳 TREESITTER
@@ -304,27 +305,25 @@ require("lazy").setup({
 			alpha.setup(dashboard.opts)
 
 			-- Disable alpha auto redraws (fixes Invalid window/buffer errors)
---			vim.cmd([[
---       autocmd! AlphaRedraw
---     ]])
+			--			vim.cmd([[
+			--       autocmd! AlphaRedraw
+			--     ]])
 			-- Show dashboard on startup
 			vim.api.nvim_create_autocmd("VimEnter", {
-				callback = function()		
-						vim.schedule(function()
+				callback = function()
+					vim.schedule(function()
+						Snacks.explorer.open({
+							layout = {
+								preset = "sidebar",
+								position = "left",
+								width = 30,
+							},
+						})
 
-							Snacks.explorer.open({
-								layout = {
-									preset = "sidebar",
-									position = "left",
-									width = 30,
-								},
-							})
-
-              if vim.fn.argc() == 0 then
-                vim.cmd("Alpha")
-              end
-						end)
-					end
+						if vim.fn.argc() == 0 then
+							vim.cmd("Alpha")
+						end
+					end)
 				end,
 			})
 			vim.api.nvim_create_autocmd("BufEnter", {
