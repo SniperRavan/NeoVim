@@ -38,7 +38,7 @@ map("n", "<leader>fg", function()
 	Snacks.picker.grep({
 		cwd = vim.fn.getcwd(),
     hidden = true,
-    ignored = true.
+    ignored = true,
 	})
 end, { desc = "Live Grep Project" })
 map("n", "<leader>fr", function()
@@ -102,3 +102,41 @@ map("n", "<leader>dn", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
 map("n", "<leader>dp", vim.diagnostic.goto_prev, { desc = "Prev Diagnostic" })
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
 
+--------------------------------------------------
+-- Yanked Notify
+--------------------------------------------------
+vim.api.nvim_create_autocmd("TextYankPost", {
+	callback = function()
+		local count = vim.fn.getreg('"'):gsub("\n", "\n")
+		vim.notify("Copied/Yanked text", vim.log.levels.INFO, {
+			title = "Clipboard",
+		})
+	end,
+})
+
+--------------------------------------------------
+-- Delete nofity
+--------------------------------------------------
+vim.keymap.set("n", "dd", function()
+	vim.cmd("normal! dd")
+	vim.notify("Line deleted", vim.log.levels.WARN, {
+		title = "Delete",
+	})
+end)
+
+vim.keymap.set("v", "d", function()
+	vim.cmd('normal! "zd')
+	vim.notify("Selection deleted", vim.log.levels.WARN, {
+		title = "Delete",
+	})
+end)
+
+--------------------------------------------------
+-- Paste Notify
+--------------------------------------------------
+vim.keymap.set("n", "p", function()
+	vim.cmd("normal! p")
+	vim.notify("Pasted", vim.log.levels.INFO, {
+		title = "Clipboard",
+	})
+end)
