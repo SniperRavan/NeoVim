@@ -1,336 +1,446 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git", "clone", "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    lazypath,
-  })
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		lazypath,
+	})
 end
 
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
+	--------------------------------------------------
+	-- 🔑 WHICH-KEY
+	--------------------------------------------------
+	{ "folke/which-key.nvim", event = "VeryLazy", opts = {} },
 
-  --------------------------------------------------
-  -- 🎨 THEME (PERFECT TRANSPARENCY & TERMINAL)
-  --------------------------------------------------
-  {
-    "catppuccin/nvim",
-    name = "catppuccin",
-    priority = 1000,
-    config = function()
-      require("catppuccin").setup({
-        transparent_background = true, -- Makes main editor glass/transparent
-        integrations = {
-          nvimtree = true,
-          telescope = { enabled = true },
-          notify = true,
-          noice = true,
-        },
-        custom_highlights = function(colors)
-          return {
-            -- 👈 Forces floating terminal to USE Catppuccin's dark background
-            NormalFloat = { bg = colors.mantle },
-            FloatBorder = { bg = colors.mantle, fg = colors.mauve },
+	--------------------------------------------------
+	-- 🍿 SNACKS.NVIM (The God Plugin)
+	--------------------------------------------------
+	{
+		"folke/snacks.nvim",
+		priority = 1000,
+		lazy = false,
+		opts = {
+			explorer = {
+				enabled = true,
+				replace_netrw = true,
 
-            -- Ensures your tabline stays transparent
-            TabLineFill = { bg = "NONE" },
-            TabLine = { bg = "NONE" },
-          }
-        end
-      })
+				win = {
+					list = {
+						keys = {
+							["."] = "toggle_hidden",
+						},
+					},
+				},
 
-      vim.cmd.colorscheme("catppuccin-mocha")
-    end
-  },
+				filter = {
+					dotfiles = false,
+					git_ignored = false,
+				},
+			},
 
-  --------------------------------------------------
-  -- 📝 MARKDOWN LIVE PREVIEW
-  --------------------------------------------------
-  {
-    "iamcco/markdown-preview.nvim",
-    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    build = "cd app && npm install",
-    init = function()
-      vim.g.mkdp_filetypes = { "markdown" }
-      -- Optional: makes it so the browser only opens when you tell it to
-      vim.g.mkdp_auto_start = 0
-      vim.g.mkdp_auto_close = 1
-    end,
-    ft = { "markdown" },
-  },
+			picker = {
+				enabled = true,
+				sources = {
+					explorer = {
+						auto_close = false,
+					},
+				},
+			},
 
-  --------------------------------------------------
-  -- 🌐 LIVE SERVER (HTML/CSS/JS PREVIEW)
-  --------------------------------------------------
-  {
-    "barrett-ruth/live-server.nvim",
-    cmd = { "LiveServerStart", "LiveServerStop" },
-    init = function()
-      -- The new v0.2.0 way to configure options (we'll leave it default)
-      -- vim.g.live_server = { port = 8080 }
-    end
-  },
+			notifier = {
+				enabled = true,
+				timeout = 3000,
+				width = { min = 30, max = 80 },
+				height = { min = 1, max = 10 },
+				margin = { top = 1, right = 1 },
+				padding = true,
+				sort = { "level", "added" },
 
-  --------------------------------------------------
-  -- 🌲 FILE TREE
-  --------------------------------------------------
-  {
-    "nvim-tree/nvim-tree.lua",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      require("nvim-tree").setup({
-        view = { side = "left", width = 35 },
-        renderer = {
-          highlight_git = true,
-          indent_markers = { enable = true },
-        },
-      })
-    end
-  },
+				style = "fancy",
 
-  --------------------------------------------------
-  -- 🔍 TELESCOPE
-  --------------------------------------------------
-  {
-    "nvim-telescope/telescope.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" }
-  },
+				top_down = false,
+			},
+			zen = {
+				enabled = true,
+			},
+		},
 
-  --------------------------------------------------
-  -- 🌳 TREESITTER
-  --------------------------------------------------
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    event = { "BufReadPost", "BufNewFile" },
-    config = function()
-      local ok, ts = pcall(require, "nvim-treesitter.configs")
-      if not ok then return end
+		config = function(_, opts)
+			require("snacks").setup(opts)
 
-      ts.setup({
-        ensure_installed = { "lua", "javascript", "html", "css", "typescript" },
-        highlight = { enable = true },
-        indent = { enable = true },
-      })
-    end
-  },
+			-- Global notifications
+			vim.notify = require("snacks").notifier.notify
+		end,
+	},
 
-  --------------------------------------------------
-  -- 📊 STATUSLINE & BUFFERLINE
-  --------------------------------------------------
-  {
-    "nvim-lualine/lualine.nvim",
-    config = function()
-      require("lualine").setup({
-        options = { theme = "auto" }
-      })
-    end
-  },
-  {
-    "akinsho/bufferline.nvim",
-    dependencies = "nvim-tree/nvim-web-devicons",
-    config = function()
-      require("bufferline").setup()
-    end
-  },
+	--------------------------------------------------
+	-- 🎨 THEME (RUTHLESS LINUX TRANSPARENCY)
+	--------------------------------------------------
+	{
+		"catppuccin/nvim",
+		name = "catppuccin",
+		priority = 1000,
+		config = function()
+			require("catppuccin").setup({
+				transparent_background = true,
+				integrations = {
+					which_key = true,
+					blink_cmp = true,
+					gitsigns = true,
+					markdown = true,
+				},
+				custom_highlights = function(colors)
+					return {
+						Normal = { bg = "NONE" },
+						NormalFloat = { bg = "NONE" },
+						FloatBorder = { bg = "NONE", fg = colors.mauve },
+						TabLineFill = { bg = "NONE" },
+						TabLine = { bg = "NONE" },
+						SnacksNormal = { bg = "NONE" },
+						SnacksNormalNC = { bg = "NONE" },
+						SnacksBackdrop = { bg = "NONE" },
+						SnacksWinBar = { bg = "NONE" },
+					}
+				end,
+			})
+			vim.cmd.colorscheme("catppuccin-mocha")
+		end,
+	},
 
-  --------------------------------------------------
-  -- 💻 FLOAT TERMINAL
-  --------------------------------------------------
-  {
-    "akinsho/toggleterm.nvim",
-    config = function()
-      require("toggleterm").setup({
-        direction = "float",
-        shell = "pwsh -NoLogo",
-        float_opts = {
-          border = "rounded",
-          winblend = 0, -- Set to 0 so the Catppuccin background is solid
-        },
-      })
-    end
-  },
+	--------------------------------------------------
+	-- 📝 WEB DEV TOOLS & FILE MANAGEMENT
+	--------------------------------------------------
+	{
+		"iamcco/markdown-preview.nvim",
+		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+		build = "cd app && yarn install",
+		init = function()
+			vim.g.mkdp_filetypes = { "markdown" }
+			vim.g.mkdp_auto_close = 1
+		end,
+		ft = { "markdown" },
+	},
+	{ "barrett-ruth/live-server.nvim", cmd = { "LiveServerStart", "LiveServerStop" } },
+	{ "stevearc/oil.nvim", opts = { view_options = { show_hidden = true } } },
 
-  --------------------------------------------------
-  -- ✨ ANIMATIONS
-  --------------------------------------------------
-  {
-    "karb94/neoscroll.nvim",
-    config = function()
-      require("neoscroll").setup()
-    end
-  },
-  {
-    "gen740/SmoothCursor.nvim",
-    config = function()
-      require("smoothcursor").setup({
-        type = "default",
-        fancy = { enable = true },
-      })
-    end
-  },
+	--------------------------------------------------
+	-- 🌳 TREESITTER
+	--------------------------------------------------
+	{
+		"nvim-treesitter/nvim-treesitter",
+		build = ":TSUpdate",
+		event = { "BufReadPost", "BufNewFile" },
+		config = function()
+			local ok, configs = pcall(require, "nvim-treesitter.configs")
+			if not ok then
+				return
+			end
 
-  --------------------------------------------------
-  -- 🏠 DASHBOARD
-  --------------------------------------------------
-  {
-    "goolord/alpha-nvim",
-    config = function()
-      local alpha = require("alpha")
-      local dashboard = require("alpha.themes.dashboard")
+			configs.setup({
+				ensure_installed = { "lua", "javascript", "html", "css", "typescript", "vim", "vimdoc", "markdown" },
+				auto_install = true,
+				highlight = { enable = true },
+				indent = { enable = true },
+			})
+		end,
+	},
 
-      dashboard.section.header.val = {
-        [[                                                                       ]],
-        [[       ████ ██████           █████      ██                     ]],
-        [[      ███████████             █████                             ]],
-        [[      █████████ ███████████████████ ███   ███████████   ]],
-        [[     █████████  ███    █████████████ █████ ██████████████   ]],
-        [[    █████████ ██████████ █████████ █████ █████ ████ █████   ]],
-        [[  ███████████ ███    ███ █████████ █████ █████ ████ █████  ]],
-        [[ ██████  █████████████████████ ████ █████ █████ ████ ██████ ]],
-      }
+	--------------------------------------------------
+	-- 🤖 AI: COPILOT & CHAT
+	--------------------------------------------------
+	{
+		"zbirenbaum/copilot.lua",
+		cmd = "Copilot",
+		event = "InsertEnter",
+		config = function()
+			require("copilot").setup({
+				suggestion = { enabled = true, auto_trigger = true, keymap = { accept = "<C-l>" } },
+				panel = { enabled = false },
+			})
+		end,
+	},
+	{
+		"CopilotC-Nvim/CopilotChat.nvim",
+		dependencies = { "zbirenbaum/copilot.lua", "nvim-lua/plenary.nvim" },
+		build = "make tiktoken",
+		opts = {
+			window = { layout = "float", width = 0.8, height = 0.8 },
+		},
+	},
 
-      dashboard.section.buttons.val = {
-        dashboard.button("f f", "󰈔  Find File", ":Telescope find_files<CR>"),
-        dashboard.button("f n", "  New File", ":ene <BAR> startinsert <CR>"),
-        dashboard.button("f r", "  Recent Files", ":Telescope oldfiles<CR>"),
-        dashboard.button("f g", "󰈭  Find Text", ":Telescope live_grep<CR>"),
-        dashboard.button("f c", "  Configuration", ":e $MYVIMRC<CR>"),
-        dashboard.button("q", "󰩈  Quit", ":qa<CR>"),
-      }
+	--------------------------------------------------
+	-- 📊 STATUSLINE, BUFFERLINE & UI
+	--------------------------------------------------
+	{
+		"nvim-lualine/lualine.nvim",
+		config = function()
+			require("lualine").setup({
+				options = { theme = "auto", section_separators = "", component_separators = "" },
+			})
+		end,
+	},
+	{
+		"akinsho/bufferline.nvim",
+		dependencies = "echasnovski/mini.icons",
+		config = function()
+			require("bufferline").setup({ options = { show_buffer_close_icons = true, show_close_icon = true } })
+		end,
+	},
+	{
+		"akinsho/toggleterm.nvim",
 
-      local tagline = {
-        type = "text",
-        val = "Your ideas, in code.",
-        opts = { position = "center", hl = "Comment" },
-      }
+		config = function()
+			require("toggleterm").setup({
+				direction = "float",
+				shell = vim.o.shell,
 
-      local v = vim.version()
-      local version_str = "Neovim v" .. v.major .. "." .. v.minor .. "." .. v.patch
-      local version_footer = {
-        type = "text",
-        val = "🟢 No sessions                      " .. version_str .. "  ",
-        opts = { position = "center", hl = "Comment" },
-      }
+				float_opts = {
+					border = "rounded",
+					winblend = 0,
+				},
+			})
 
-      dashboard.config.layout = {
-        { type = "padding", val = 2 },
-        dashboard.section.header,
-        { type = "padding", val = 2 },
-        dashboard.section.buttons,
-        { type = "padding", val = 2 },
-        tagline,
-        { type = "padding", val = 1 },
-        version_footer,
-      }
+			vim.api.nvim_set_hl(0, "FloatBorder", {
+				fg = "#cba6f7",
+				bg = "NONE",
+			})
+		end,
+	},
 
-      alpha.setup(dashboard.opts)
-    end
-  },
+	--------------------------------------------------
+	-- ✨ ANIMATIONS, TEXT OBJECTS & MULTI-CURSOR
+	--------------------------------------------------
+	{
+		"karb94/neoscroll.nvim",
+		config = function()
+			require("neoscroll").setup()
+		end,
+	},
+	{
+		"gen740/SmoothCursor.nvim",
+		config = function()
+			require("smoothcursor").setup({ type = "default", fancy = { enable = true } })
+		end,
+	},
+	{
+		"echasnovski/mini.nvim",
+		version = false,
+		config = function()
+			require("mini.ai").setup()
+			require("mini.surround").setup()
+			require("mini.icons").setup()
+		end,
+	},
+	{
+		"mg979/vim-visual-multi",
+		branch = "master",
+		init = function()
+			vim.g.VM_theme = "ocean"
+			vim.g.VM_maps = { ["Find Under"] = "<C-n>" }
+		end,
+	},
 
-  --------------------------------------------------
-  -- 🔔 NOTIFICATIONS
-  --------------------------------------------------
-  {
-    "rcarriga/nvim-notify",
-    config = function()
-      require("notify").setup({
-        background_colour = "#000000",
-        stages = "fade_in_slide_out",
-      })
-      vim.notify = require("notify")
-    end
-  },
-  {
-    "folke/noice.nvim",
-    dependencies = { "MunifTanjim/nui.nvim" },
-    config = function()
-      require("noice").setup({
-        presets = { command_palette = true, lsp_doc_border = true },
-      })
-    end
-  },
+	--------------------------------------------------
+	-- 🏠 DASHBOARD
+	--------------------------------------------------
+	{
+		"goolord/alpha-nvim",
 
-  --------------------------------------------------
-  -- 🌿 GIT
-  --------------------------------------------------
-  { "lewis6991/gitsigns.nvim",                config = true },
-  { "f-person/git-blame.nvim",                config = function() vim.g.gitblame_enabled = 1 end },
+		lazy = false,
+		priority = 900,
 
-  --------------------------------------------------
-  -- 🚨 INLINE DIAGNOSTICS
-  --------------------------------------------------
-  { "rachartier/tiny-inline-diagnostic.nvim", config = true },
+		config = function()
+			local alpha = require("alpha")
+			local dashboard = require("alpha.themes.dashboard")
 
-  --------------------------------------------------
-  -- 🧠 LSP (NEOVIM 0.11+ / LSPCONFIG v3.0)
-  --------------------------------------------------
-  { "williamboman/mason.nvim",                config = true },
-  {
-    "williamboman/mason-lspconfig.nvim",
-    config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "ts_ls", "html", "cssls" },
-      })
-    end
-  },
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = { "hrsh7th/cmp-nvim-lsp" },
-    config = function()
-      local cap = require("cmp_nvim_lsp").default_capabilities()
+			dashboard.section.header.val = {
+				[[                                                                       ]],
+				[[       ████ ██████           █████      ██                     ]],
+				[[      ███████████             █████                             ]],
+				[[      █████████ ███████████████████ ███   ███████████   ]],
+				[[     █████████  ███    █████████████ █████ ██████████████   ]],
+				[[    █████████ ██████████ █████████ █████ █████ ████ █████   ]],
+				[[  ███████████ ███    ███ █████████ █████ █████ ████ █████  ]],
+				[[ ██████  █████████████████████ ████ █████ █████ ████ ██████ ]],
+			}
 
-      vim.lsp.config("lua_ls", { capabilities = cap })
-      vim.lsp.config("ts_ls", { capabilities = cap })
-      vim.lsp.config("html", { capabilities = cap })
-      vim.lsp.config("cssls", { capabilities = cap })
+			dashboard.section.buttons.val = {
+				dashboard.button("f f", "󰈔  Find File", function()
+					Snacks.picker.files()
+				end),
 
-      vim.lsp.enable({ "lua_ls", "ts_ls", "html", "cssls" })
-    end
-  },
+				dashboard.button("f n", "  New File", ":ene <BAR> startinsert <CR>"),
 
-  --------------------------------------------------
-  -- 🖌️ AUTO-FORMATTER
-  --------------------------------------------------
-  {
-    "stevearc/conform.nvim",
-    event = { "BufWritePre" },
-    config = function()
-      require("conform").setup({
-        formatters_by_ft = {
-          javascript = { "prettier" },
-          typescript = { "prettier" },
-          html = { "prettier" },
-          css = { "prettier" },
-          json = { "prettier" },
-          lua = { "stylua" },
-        },
-        format_on_save = {
-          timeout_ms = 500,
-          lsp_fallback = true,
-        },
-      })
-    end,
-  },
+				dashboard.button("f r", "  Recent Files", function()
+					Snacks.picker.recent()
+				end),
 
-  --------------------------------------------------
-  -- 🤖 AUTOCOMPLETE
-  --------------------------------------------------
-  {
-    "hrsh7th/nvim-cmp",
-    dependencies = { "hrsh7th/cmp-nvim-lsp", "L3MON4D3/LuaSnip" },
-    config = function()
-      local cmp = require("cmp")
-      cmp.setup({
-        mapping = cmp.mapping.preset.insert({
-          ["<Tab>"] = cmp.mapping.select_next_item(),
-          ["<CR>"] = cmp.mapping.confirm({ select = true }),
-        }),
-        sources = { { name = "nvim_lsp" } }
-      })
-    end
-  },
+				dashboard.button("f g", "󰈭  Find Text", function()
+					Snacks.picker.grep()
+				end),
 
+				dashboard.button("f c", "  Configuration", ":e $MYVIMRC<CR>"),
+
+				dashboard.button("q", "󰩈  Quit", ":qa<CR>"),
+			}
+
+			local v = vim.version()
+			dashboard.section.footer.val = "⚡ Neovim v" .. v.major .. "." .. v.minor .. "." .. v.patch
+
+			alpha.setup(dashboard.opts)
+
+			-- Disable alpha auto redraws (fixes Invalid window/buffer errors)
+			vim.cmd([[
+       autocmd! AlphaRedraw
+     ]])
+			-- Show dashboard on startup
+			vim.api.nvim_create_autocmd("VimEnter", {
+				callback = function()
+					if vim.fn.argc() == 0 then
+						vim.cmd("Alpha")
+					end
+				end,
+			})
+			vim.api.nvim_create_autocmd("BufEnter", {
+				nested = true,
+				callback = function()
+					local bufs = vim.tbl_filter(function(buf)
+						return vim.bo[buf.bufnr].buflisted
+							and vim.api.nvim_buf_is_valid(buf.bufnr)
+							and vim.bo[buf.bufnr].buftype == ""
+					end, vim.fn.getbufinfo())
+
+					if #bufs == 0 then
+						vim.cmd("Alpha")
+					end
+				end,
+			})
+		end,
+	},
+
+	--------------------------------------------------
+	-- 🌿 GIT & DIAGNOSTICS
+	--------------------------------------------------
+	{ "lewis6991/gitsigns.nvim", config = true },
+	{
+		"f-person/git-blame.nvim",
+		config = function()
+			vim.g.gitblame_enabled = 1
+		end,
+	},
+	{ "rachartier/tiny-inline-diagnostic.nvim", config = true },
+
+	--------------------------------------------------
+	-- 🧠 LSP, AUTOFORMAT & BLINK.CMP (THE SPEED DEMON)
+	--------------------------------------------------
+	{ "williamboman/mason.nvim", config = true },
+	{
+		"williamboman/mason-lspconfig.nvim",
+		config = function()
+			require("mason-lspconfig").setup({ ensure_installed = { "lua_ls", "ts_ls", "html", "cssls" } })
+		end,
+	},
+	{
+		"neovim/nvim-lspconfig",
+		dependencies = { "saghen/blink.cmp" },
+
+		config = function()
+			local capabilities = require("blink.cmp").get_lsp_capabilities()
+
+			local servers = {
+				lua_ls = {
+					settings = {
+						Lua = {
+							diagnostics = {
+								globals = { "vim" },
+							},
+						},
+					},
+				},
+				ts_ls = {},
+				html = {},
+				cssls = {},
+			}
+
+			for server, config in pairs(servers) do
+				config.capabilities = capabilities
+
+				vim.lsp.config(server, config)
+				vim.lsp.enable(server)
+			end
+		end,
+	},
+	{
+		"stevearc/conform.nvim",
+		event = "BufWritePre",
+		config = function()
+			require("conform").setup({
+				formatters_by_ft = {
+					javascript = { "prettier" },
+					typescript = { "prettier" },
+					html = { "prettier" },
+					css = { "prettier" },
+					json = { "prettier" },
+					lua = { "stylua" },
+				},
+				format_on_save = { timeout_ms = 500, lsp_fallback = true },
+			})
+		end,
+	},
+	{
+		"saghen/blink.cmp",
+		version = "*",
+		opts = {
+			keymap = {
+				preset = "default",
+
+				["<Tab>"] = { "select_next", "fallback" },
+				["<S-Tab>"] = { "select_prev", "fallback" },
+
+				["<CR>"] = { "accept", "fallback" },
+			},
+
+			appearance = {
+				nerd_font_variant = "mono",
+			},
+
+			completion = {
+				menu = {
+					auto_show = true,
+				},
+			},
+
+			sources = {
+				default = { "lsp", "path", "snippets", "buffer" },
+			},
+
+			signature = { enabled = true },
+		},
+	},
 })
+
+-- LSP Keymaps
+vim.api.nvim_create_autocmd("LspAttach", {
+	callback = function(ev)
+		local opts = { buffer = ev.buf }
+
+		vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+		vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+		vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+		vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+	end,
+})
+
+vim.opt.laststatus = 3
+vim.opt.termguicolors = true
+vim.opt.cmdheight = 0
+vim.opt.showmode = false
+vim.opt.fillchars = {
+	eob = " ",
+}

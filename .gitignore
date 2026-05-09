@@ -1,0 +1,32 @@
+# Neovim temp files
+
+*.swp
+*.swo
+*~
+
+# Session files
+
+Session.vim
+
+# OS junk
+
+.DS_Store
+Thumbs.db
+
+# Logs
+
+*.log
+
+# Cache
+
+.cache/
+
+# Local state
+
+.local/
+
+# Lazy backups
+
+lazyvim.json
+
+

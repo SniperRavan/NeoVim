@@ -25,5 +25,12 @@ vim.opt.splitbelow = true
 -- Popup menu feel
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
 
--- Sync Neovim clipboard with Windows OS clipboard
+-- Sync Neovim clipboard with OS clipboard
 vim.opt.clipboard = "unnamedplus"
+
+-- Automatically updates cwd to current project
+-- vim.opt.autochdir = true
+
+-- Prevent intro-screen flickers fighting alpha
+vim.opt.shortmess:append("sI")
+
