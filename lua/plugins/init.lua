@@ -304,6 +304,16 @@ require("lazy").setup({
 				callback = function()
 					if vim.fn.argc() == 0 then
 						vim.cmd("Alpha")
+
+						vim.schedule(function()
+							Snacks.explorer.open({
+								layout = {
+									preset = "sidebar",
+									position = "left",
+									width = 30,
+								},
+							})
+						end)
 					end
 				end,
 			})
