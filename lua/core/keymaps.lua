@@ -4,7 +4,7 @@ vim.g.maplocalleader = " "
 
 -- 🌲 Snacks Explorer & Oil (Replacing NvimTree)
 map("n", "<leader>e", function()
-	Snacks.explorer({
+	Snacks.explorer.open({
 		layout = {
 			preset = "sidebar",
 			position = "left",
@@ -30,15 +30,15 @@ end, { desc = "Global File Search" })
 map("n", "<leader>ff", function()
 	Snacks.picker.files({
 		cwd = vim.fn.getcwd(),
-    hidden = true,
-    ignored = true,
+		hidden = true,
+		ignored = true,
 	})
 end, { desc = "Find Project Files" })
 map("n", "<leader>fg", function()
 	Snacks.picker.grep({
 		cwd = vim.fn.getcwd(),
-    hidden = true,
-    ignored = true.
+		hidden = true,
+		ignored = true,
 	})
 end, { desc = "Live Grep Project" })
 map("n", "<leader>fr", function()
@@ -102,3 +102,43 @@ map("n", "<leader>dn", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
 map("n", "<leader>dp", vim.diagnostic.goto_prev, { desc = "Prev Diagnostic" })
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
 
+--------------------------------------------------
+-- Yanked Notify
+--------------------------------------------------
+vim.api.nvim_create_autocmd("TextYankPost", {
+	callback = function()
+		local lines = vim.v.event.regcontents
+		local count = #lines
+
+		vim.notify("Yanked " .. count .. " line(s)", vim.log.levels.INFO, {
+			title = "Clipboard",
+		})
+	end,
+})
+
+--------------------------------------------------
+-- Delete nofity
+--------------------------------------------------
+vim.keymap.set("n", "dd", function()
+	vim.cmd("normal! dd")
+	vim.notify("Line deleted", vim.log.levels.WARN, {
+		title = "Delete",
+	})
+end)
+
+vim.keymap.set("v", "d", function()
+	vim.cmd('normal! "zd')
+	vim.notify("Selection deleted", vim.log.levels.WARN, {
+		title = "Delete",
+	})
+end)
+
+--------------------------------------------------
+-- Paste Notify
+--------------------------------------------------
+vim.keymap.set("n", "p", function()
+	vim.cmd("normal! p")
+	vim.notify("Pasted", vim.log.levels.INFO, {
+		title = "Clipboard",
+	})
+end)
