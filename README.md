@@ -137,7 +137,7 @@ nvim/
 | `Guide.md` | Complete documentation |
 | `screenshots/` | UI previews |
 
-📘 Full architecture explanation available in [Guide.md](./Guide.md)
+📘 Full architecture explanation available in [Guide.md](GUIDE.md)
 
 ---
 
@@ -211,7 +211,7 @@ Plugins will install automatically.
 ```
 
 📘 Full installation guide and troubleshooting:
-➡️ [Guide.md](./Guide.md)
+➡️ [Guide.md](GUIDE.md)
 
 ---
 
@@ -247,7 +247,7 @@ Space
 | `<leader>ca` | Code Actions |
 
 📘 Complete keymap reference:
-➡️ [Guide.md](./Guide.md)
+➡️ [Guide.md](GUIDE.md)
 
 ---
 
@@ -268,7 +268,7 @@ Space
 </div>
 
 📘 Full plugin explanations and workflows:
-➡️ [Guide.md](./Guide.md)
+➡️ [Guide.md](GUIDE.md)
 
 ---
 
@@ -296,7 +296,7 @@ Space
 | `cssls` | CSS |
 
 📘 Full LSP setup and usage:
-➡️ [Guide.md](./Guide.md)
+➡️ [Guide.md](GUIDE.md)
 
 ---
 
@@ -333,7 +333,7 @@ Example commands:
 ```
 
 📘 Detailed optimization explanation:
-➡️ [Guide.md](./Guide.md)
+➡️ [Guide.md](GUIDE.md)
 
 ---
 
@@ -353,7 +353,7 @@ Examples:
 - modify keymaps
 
 📘 Complete customization guide:
-➡️ [Guide.md](./Guide.md)
+➡️ [Guide.md](GUIDE.md)
 
 ---
 
@@ -389,7 +389,7 @@ Examples:
 ```
 
 📘 Full command handbook:
-➡️ [Guide.md](./Guide.md)
+➡️ [Guide.md](GUIDE.md)
 
 ---
 
@@ -405,7 +405,7 @@ Common fixes:
 ```
 
 📘 Full troubleshooting documentation:
-➡️ [Guide.md](./Guide.md)
+➡️ [Guide.md](GUIDE.md)
 
 ---
 
@@ -463,7 +463,7 @@ For:
 - architecture breakdown
 - customization tutorials
 
-## ➜ [Open Guide.md](./Guide.md)
+## ➜ [Open Guide.md](GUIDE.md)
 
 ---
 
