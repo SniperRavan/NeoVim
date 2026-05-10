@@ -320,9 +320,7 @@ require("lazy").setup({
 							},
 						})
 
-						if vim.fn.argc() == 0 then
-							vim.cmd("Alpha")
-						end
+						vim.cmd("Alpha")
 					end)
 				end,
 			})
