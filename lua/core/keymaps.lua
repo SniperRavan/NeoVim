@@ -4,7 +4,7 @@ vim.g.maplocalleader = " "
 
 -- 🌲 Snacks Explorer & Oil (Replacing NvimTree)
 map("n", "<leader>e", function()
-	Snacks.explorer({
+	Snacks.explorer.open({
 		layout = {
 			preset = "sidebar",
 			position = "left",
@@ -30,15 +30,15 @@ end, { desc = "Global File Search" })
 map("n", "<leader>ff", function()
 	Snacks.picker.files({
 		cwd = vim.fn.getcwd(),
-    hidden = true,
-    ignored = true,
+		hidden = true,
+		ignored = true,
 	})
 end, { desc = "Find Project Files" })
 map("n", "<leader>fg", function()
 	Snacks.picker.grep({
 		cwd = vim.fn.getcwd(),
-    hidden = true,
-    ignored = true,
+		hidden = true,
+		ignored = true,
 	})
 end, { desc = "Live Grep Project" })
 map("n", "<leader>fr", function()
@@ -107,8 +107,10 @@ map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Line Diagnostics" })
 --------------------------------------------------
 vim.api.nvim_create_autocmd("TextYankPost", {
 	callback = function()
-		local count = vim.fn.getreg('"'):gsub("\n", "\n")
-		vim.notify("Copied/Yanked text", vim.log.levels.INFO, {
+		local lines = vim.v.event.regcontents
+		local count = #lines
+
+		vim.notify("Yanked " .. count .. " line(s)", vim.log.levels.INFO, {
 			title = "Clipboard",
 		})
 	end,
