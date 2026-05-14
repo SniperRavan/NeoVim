@@ -15,8 +15,9 @@ vim.g.maplocalleader = " "
 map("n", "<leader>e", function()
 	-- We call the toggle helper defined in autocmds.lua
 	-- It is exposed as a global so keymaps.lua stays clean.
-	if _G.ReclaimX_ToggleExplorer then
-		_G.ReclaimX_ToggleExplorer()
+	-- FIX: renamed from _G.ReclaimX_ToggleExplorer → _G.ToggleExplorer
+	if _G.ToggleExplorer then
+		_G.ToggleExplorer()
 	end
 end, { desc = "Toggle Sidebar Explorer" })
 
@@ -27,7 +28,9 @@ map("n", "-", "<cmd>Oil<CR>", { desc = "Open Parent Directory (Oil)" })
 -- ── Global file search (home directory, ivy layout) ──────────
 map("n", "<leader>g", function()
 	Snacks.picker.files({
-		cwd = vim.loop.os_homedir(),
+		-- FIX: vim.loop.os_homedir() deprecated in Neovim 0.10+
+		-- vim.uv is the correct alias for the libuv bindings
+		cwd = vim.uv.os_homedir(),
 		hidden = true,
 		ignored = true,
 		layout = { preset = "ivy" },
@@ -69,6 +72,8 @@ map("n", "<leader>x", ":bdelete<CR>", { desc = "Close Current Buffer" })
 -- ── Terminal ──────────────────────────────────────────────────
 -- <leader>t → open a floating terminal over everything.
 -- Press <leader>t again (or Ctrl-\ Ctrl-n then <leader>t) to close.
+-- NOTE: ToggleTerm loads via event = "VeryLazy" in plugins/ui.lua,
+-- so it is guaranteed to be loaded before this keymap can fire.
 map("n", "<leader>t", "<cmd>ToggleTerm<CR>", { desc = "Toggle Floating Terminal" })
 
 -- ── AI / Copilot Chat ─────────────────────────────────────────
