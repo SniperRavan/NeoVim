@@ -2,65 +2,104 @@
 --  core/autocmds.lua
 --  THE UI STATE MACHINE
 --
---  This file owns the logic for how Alpha (dashboard), Snacks
---  Explorer (sidebar), and regular file buffers co-exist.
+--  This file controls how:
+--    • Alpha dashboard
+--    • Snacks Explorer
+--    • Normal file buffers
 --
---  State rules:
---    STARTUP            → Alpha full-screen (no explorer)
---    <leader>e pressed  → Explorer sidebar left, Alpha right
---    File opened        → Explorer left, file right
---    File closed        → Explorer left, Alpha right  (fallback)
---    <leader>e pressed  → Explorer closes, Alpha full-screen
---    All files closed (no explorer) → Alpha full-screen
+--  interact with each other.
+--
+--  UI FLOW:
+--
+--    Startup (no file)
+--      → Alpha fullscreen
+--
+--    <leader>e
+--      → Toggle Snacks Explorer sidebar
+--
+--    Open file
+--      → Explorer left + file right
+--
+--    Close last file
+--      → Alpha automatically returns
+--
+--    Close explorer
+--      → Alpha fullscreen (if no files remain)
+--
 -- ============================================================
 
 local augroup = vim.api.nvim_create_augroup
 local autocmd = vim.api.nvim_create_autocmd
 
--- ── Helper: is this buffer the Alpha dashboard? ──────────────
+-- ============================================================
+--  Helper Functions
+-- ============================================================
+
+-- ── Is this buffer Alpha dashboard? ──────────────────────────
 local function is_alpha(buf)
 	return vim.bo[buf].filetype == "alpha"
 end
 
--- ── Helper: is the Snacks explorer currently open? ───────────
-local function explorer_is_open()
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		local buf = vim.api.nvim_win_get_buf(win)
-		local ft = vim.bo[buf].filetype
-		if ft == "snacks_explorer" or ft == "snacks-explorer" then
-			return true, win
-		end
-	end
-	return false, nil
+-- ── Is this buffer Snacks Explorer? ──────────────────────────
+-- FIX: original used exact string match ("snacks_explorer" or "snacks-explorer").
+-- Snacks filetype can vary by version. Pattern match is safer.
+local function is_explorer(buf)
+	local ft = vim.bo[buf].filetype
+	-- Match anything that contains both "snacks" and "explorer"
+	return ft:find("snacks") ~= nil and ft:find("explorer") ~= nil
 end
 
--- ── Helper: count real file buffers (not alpha, not explorer) ─
+-- ── Is this a real editable file buffer? ─────────────────────
+-- Excludes:
+--   • Alpha
+--   • Explorer
+--   • terminals
+--   • special buffers
+local function is_real_file(buf)
+	return vim.api.nvim_buf_is_valid(buf)
+		and vim.bo[buf].buflisted
+		and vim.bo[buf].buftype == ""
+		and not is_alpha(buf)
+		and not is_explorer(buf)
+end
+
+-- ── Count all real file buffers ──────────────────────────────
 local function real_file_buf_count()
 	local count = 0
+
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-		if
-			vim.api.nvim_buf_is_valid(buf)
-			and vim.bo[buf].buflisted
-			and vim.bo[buf].buftype == ""
-			and vim.bo[buf].filetype ~= "alpha"
-		then
+		if is_real_file(buf) then
 			count = count + 1
 		end
 	end
+
 	return count
 end
 
--- ── Helper: open Alpha in the currently focused window ───────
-local function open_alpha()
-	-- Only open Alpha if there is no real file buffer visible in
-	-- the current window. Prevents stomping on open files.
-	local buf = vim.api.nvim_get_current_buf()
-	if not is_alpha(buf) then
-		vim.cmd("Alpha")
+-- ── Is Snacks Explorer currently open? ───────────────────────
+local function explorer_is_open()
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		local buf = vim.api.nvim_win_get_buf(win)
+
+		if is_explorer(buf) then
+			return true, win
+		end
 	end
+
+	return false, nil
 end
 
--- ── Helper: open the Snacks explorer sidebar ─────────────────
+-- ── Open Alpha dashboard ─────────────────────────────────────
+-- FIX: always wrap in vim.schedule so Alpha renders after the
+-- current event (BufDelete, window close, etc.) fully settles.
+-- Calling vim.cmd("Alpha") bare from a callback fails silently.
+local function open_alpha()
+	vim.schedule(function()
+		vim.cmd("Alpha")
+	end)
+end
+
+-- ── Open Snacks Explorer sidebar ─────────────────────────────
 local function open_explorer()
 	Snacks.explorer.open({
 		layout = {
@@ -71,85 +110,177 @@ local function open_explorer()
 	})
 end
 
--- ── Helper: close the Snacks explorer sidebar ────────────────
+-- ── Close Snacks Explorer sidebar ────────────────────────────
 local function close_explorer()
 	local open, win = explorer_is_open()
-	if open and win then
+
+	if open and vim.api.nvim_win_is_valid(win) then
 		vim.api.nvim_win_close(win, true)
 	end
 end
 
--- ── Global toggle (called by <leader>e in keymaps.lua) ───────
-_G.ReclaimX_ToggleExplorer = function()
+-- ============================================================
+--  Global Explorer Toggle
+-- ============================================================
+--
+-- Called from:
+--   core/keymaps.lua
+--
+-- Key:
+--   <leader>e
+--
+-- Behavior:
+--   Explorer closed → open it
+--   Explorer open   → close it
+--
+-- ============================================================
+
+_G.ToggleExplorer = function()
+	-- ── If explorer already open → close it ─────────────────
 	if explorer_is_open() then
 		close_explorer()
-		-- After closing explorer, if there are no real files open,
-		-- make the remaining window show Alpha.
-		vim.schedule(function()
+
+		-- If no real files remain,
+		-- restore Alpha dashboard.
+		-- FIX: use defer_fn (not schedule) so the window close
+		-- has fully settled before we try to open Alpha.
+		vim.defer_fn(function()
 			if real_file_buf_count() == 0 then
 				open_alpha()
 			end
-		end)
-	else
-		open_explorer()
-		-- Move focus back to the right window (Alpha or open file)
-		vim.schedule(function()
-			local wins = vim.api.nvim_list_wins()
-			for _, w in ipairs(wins) do
-				local buf = vim.api.nvim_win_get_buf(w)
-				local ft = vim.bo[buf].filetype
-				if ft ~= "snacks_explorer" and ft ~= "snacks-explorer" then
-					vim.api.nvim_set_current_win(w)
-					break
-				end
-			end
-		end)
+		end, 50)
+
+		return
 	end
+
+	-- ── Otherwise open explorer ─────────────────────────────
+	open_explorer()
+
+	-- Return focus to normal editing window
+	-- instead of keeping cursor trapped in sidebar.
+	vim.schedule(function()
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			local buf = vim.api.nvim_win_get_buf(win)
+
+			if not is_explorer(buf) then
+				vim.api.nvim_set_current_win(win)
+				return
+			end
+		end
+	end)
 end
 
--- ── STARTUP: open Alpha when Neovim starts with no file args ──
+-- ============================================================
+--  STARTUP LOGIC
+-- ============================================================
+--
+-- When Neovim opens WITHOUT a file argument:
+--
+--     nvim
+--
+-- show Alpha dashboard fullscreen.
+--
+-- But if opened like:
+--
+--     nvim test.lua
+--
+-- then DO NOT show Alpha.
+--
+-- ============================================================
+
 autocmd("VimEnter", {
 	group = augroup("AlphaStart", { clear = true }),
+
 	callback = function()
-		-- Only show Alpha when nvim was opened with no file argument.
+		-- Only show dashboard if no file argument exists
 		if vim.fn.argc() == 0 then
-			vim.schedule(function()
-				vim.cmd("Alpha")
-			end)
+			-- FIX: replace_netrw = true in snacks causes the explorer to
+			-- auto-open when nvim starts in a directory, splitting the screen
+			-- before alpha can render. We close it first, then open alpha.
+			-- 150ms gives lazy.nvim time to finish loading all plugins.
+			vim.defer_fn(function()
+				-- Close the explorer if replace_netrw opened it automatically
+				local open, win = explorer_is_open()
+				if open and vim.api.nvim_win_is_valid(win) then
+					vim.api.nvim_win_close(win, true)
+				end
+
+				-- Now open alpha into the remaining (or only) window
+				open_alpha()
+			end, 150)
 		end
 	end,
 })
 
--- ── FALLBACK: when a buffer is deleted, check if we need Alpha ─
--- Fires after :bdelete, bufferline close, etc.
+-- ============================================================
+--  BUFFER FALLBACK SYSTEM
+-- ============================================================
+--
+-- When the LAST real file buffer closes:
+--
+--     :bdelete  or  <leader>x
+--
+-- restore Alpha automatically.
+--
+-- This creates the "return home" dashboard effect.
+--
+-- ============================================================
+
 autocmd("BufDelete", {
 	group = augroup("AlphaFallback", { clear = true }),
+
 	callback = function()
-		vim.schedule(function()
-			-- Count remaining real file buffers
-			if real_file_buf_count() == 0 then
-				-- Find a window that isn't the explorer and show Alpha there
-				for _, win in ipairs(vim.api.nvim_list_wins()) do
+		-- FIX: defer so the buffer is fully deleted before we count.
+		-- Without the delay, the closing buffer still exists in the list
+		-- for one more tick and real_file_buf_count() returns 1 instead of 0.
+		vim.defer_fn(function()
+			-- If real files still exist,
+			-- do nothing.
+			if real_file_buf_count() > 0 then
+				return
+			end
+
+			-- Prevent opening Alpha inside explorer window.
+			-- Find the first non-explorer, non-alpha window and open Alpha there.
+			for _, win in ipairs(vim.api.nvim_list_wins()) do
+				if vim.api.nvim_win_is_valid(win) then
 					local buf = vim.api.nvim_win_get_buf(win)
-					local ft = vim.bo[buf].filetype
-					if ft ~= "snacks_explorer" and ft ~= "snacks-explorer" then
+
+					if not is_explorer(buf) then
 						vim.api.nvim_set_current_win(win)
-						open_alpha()
+
+						if not is_alpha(buf) then
+							open_alpha()
+						end
+
 						return
 					end
 				end
-				-- No other window found → just open Alpha
-				open_alpha()
 			end
-		end)
+		end, 50)
 	end,
 })
 
--- ── GUARD: prevent Alpha from being listed as a buffer ────────
--- Alpha sets bufhidden=wipe, but this double-guards it.
+-- ============================================================
+--  ALPHA BUFFER GUARD
+-- ============================================================
+--
+-- Prevent Alpha from appearing in:
+--
+--   :ls
+--   bufferline
+--   buffer switching
+--
+-- Alpha should behave like a UI screen,
+-- NOT a normal editable file buffer.
+--
+-- ============================================================
+
 autocmd("FileType", {
 	group = augroup("AlphaGuard", { clear = true }),
+
 	pattern = "alpha",
+
 	callback = function(ev)
 		vim.bo[ev.buf].buflisted = false
 	end,
