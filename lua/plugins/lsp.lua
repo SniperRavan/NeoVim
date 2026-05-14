@@ -42,65 +42,108 @@ return {
 		end,
 	},
 
-	-- ── nvim-lspconfig: configure each language server ─────────
+	-- ── nvim-lspconfig: configure language servers + LSP keymaps ─
+	--
+	-- This plugin is the core bridge between Neovim and language
+	-- servers installed through Mason.
+	--
+	-- Responsibilities:
+	--   • Start/configure language servers
+	--   • Extend completion capabilities through blink.cmp
+	--   • Register LSP keymaps when a server attaches
+	--   • Provide hover/docs/rename/goto-definition/etc.
+	--
+	-- IMPORTANT:
+	-- We keep BOTH:
+	--   1. server setup
+	--   2. LspAttach keymaps
+	--
+	-- inside ONE plugin spec.
+	--
+	-- Why?
+	-- Because splitting the same plugin into multiple specs can:
+	--   • duplicate config execution
+	--   • duplicate autocmds
+	--   • create load-order confusion
+	--   • make debugging harder later
+	--
+	-- A single spec is cleaner and more predictable.
 	{
 		"neovim/nvim-lspconfig",
+
 		dependencies = {
 			"williamboman/mason-lspconfig.nvim",
 			"saghen/blink.cmp",
 		},
+
 		config = function()
-			-- blink.cmp extends the LSP capabilities so the server knows
-			-- we support fancy completion features.
+			-- ── blink.cmp capabilities ────────────────────────────
+			-- Extend LSP completion capabilities so language servers
+			-- know we support advanced completion features.
 			local capabilities = require("blink.cmp").get_lsp_capabilities()
 
-			-- Server configurations. Add extra servers here.
-			-- Each key is the server name. The value is its config table.
+			-- ── Language server configurations ───────────────────
+			-- Each key is the server name.
+			-- The value is its configuration table.
 			local servers = {
+
+				-- Lua Language Server
 				lua_ls = {
 					settings = {
 						Lua = {
 							diagnostics = {
-								-- Tell lua_ls that "vim" is a valid global variable.
-								-- Without this you'd get a warning on every vim.* call.
+								-- Prevent "undefined global" warnings for these globals
+								-- vim   → Neovim API
+								-- Snacks → snacks.nvim (used in keymaps, autocmds)
 								globals = { "vim", "Snacks" },
 							},
 						},
 					},
 				},
-				ts_ls = {}, -- TypeScript/JavaScript — no extra config needed
-				html = {}, -- HTML
-				cssls = {}, -- CSS
+
+				-- TypeScript / JavaScript
+				ts_ls = {},
+
+				-- HTML
+				html = {},
+
+				-- CSS
+				cssls = {},
 			}
 
-			for server, config in pairs(servers) do
-				config.capabilities = capabilities
-				vim.lsp.config(server, config)
+			-- ── Enable all configured servers ────────────────────
+			for server, cfg in pairs(servers) do
+				cfg.capabilities = capabilities
+
+				vim.lsp.config(server, cfg)
 				vim.lsp.enable(server)
 			end
-		end,
-	},
 
-	-- ── LSP keymaps (set when an LSP attaches to a buffer) ─────
-	-- These are defined here as an autocmd so they only activate
-	-- when a language server is actually running for that file.
-	{
-		"neovim/nvim-lspconfig", -- same plugin, second spec just adds the autocmd
-		config = function()
+			-- ── LSP keymaps ──────────────────────────────────────
+			--
+			-- These keymaps only become active when an LSP server
+			-- attaches to the current buffer.
+			--
+			-- This avoids polluting non-LSP buffers with LSP-only keys.
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("LspKeymaps", { clear = true }),
 				callback = function(ev)
 					local opts = { buffer = ev.buf }
-					-- gd → jump to where a function/variable is defined
+
+					-- gd → go to definition
 					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-					-- K  → show documentation for the thing under the cursor
+
+					-- K → hover documentation
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-					-- <leader>rn → rename a symbol everywhere in the project
-					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-					-- <leader>ca → show available quick-fix actions
-					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-					-- gr → show all references to the thing under the cursor
+
+					-- gr → list references
 					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+
+					-- <leader>rn → rename symbol project-wide
+					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+
+					-- <leader>ca → code actions / quick fixes
+					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
 				end,
 			})
 		end,
@@ -126,7 +169,8 @@ return {
 				-- Automatically format on every :w / :write
 				format_on_save = {
 					timeout_ms = 500,
-					lsp_fallback = true, -- If no formatter configured, try LSP formatting
+					-- lsp_fallback = true, -- deprecated in conform >= 7.x, use lsp_format below
+					lsp_format = "fallback", -- if no formatter configured, try LSP formatting
 				},
 			})
 		end,
