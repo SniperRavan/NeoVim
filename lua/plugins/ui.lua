@@ -53,16 +53,14 @@ return {
 			-- set it in Alacritty's config: font.normal.family.
 			-- Recommended: JetBrainsMono Nerd Font
 			dashboard.section.header.val = {
-				"                                                     ",
-				"  ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗",
-				"  ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║",
-				"  ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║",
-				"  ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║",
-				"  ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║",
-				"  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝",
-				"                                                     ",
-				"         R E C L A I M X  ·  cyberpunk  ·  v0.12    ",
-				"                                                     ",
+				[[                                                                       ]],
+				[[       ████ ██████           █████      ██                     ]],
+				[[      ███████████             █████                             ]],
+				[[      █████████ ███████████████████ ███   ███████████   ]],
+				[[     █████████  ███    █████████████ █████ ██████████████   ]],
+				[[    █████████ ██████████ █████████ █████ █████ ████ █████   ]],
+				[[  ███████████ ███    ███ █████████ █████ █████ ████ █████  ]],
+				[[ ██████  █████████████████████ ████ █████ █████ ████ ██████ ]],
 			}
 
 			-- ── Dashboard buttons ────────────────────────────────
@@ -104,7 +102,8 @@ return {
 					-- Don't show Alpha or explorer in the tab bar
 					custom_filter = function(buf)
 						local ft = vim.bo[buf].filetype
-						return ft ~= "alpha" and ft ~= "snacks_explorer"
+						-- Filter out alpha and any snacks explorer variant
+						return ft ~= "alpha" and not (ft:find("snacks") and ft:find("explorer"))
 					end,
 				},
 			})
@@ -112,16 +111,25 @@ return {
 	},
 
 	-- ── Lualine: statusline at the bottom ──────────────────────
-	-- Shows: mode, branch, filename, diagnostics, progress, time.
+	-- Shows: mode, branch, filename, diagnostics, progress, position.
+	--
+	-- FIX: ":LualineNotices" warning was caused by deprecated options.
+	-- Removed: section_separators = "" and component_separators = "".
+	-- These are valid but must be set inside options{} as tables, not strings.
+	-- Empty string is ambiguous — use explicit empty table {} instead.
 	{
 		"nvim-lualine/lualine.nvim",
 		event = "VeryLazy",
 		config = function()
 			require("lualine").setup({
 				options = {
-					theme = "catppuccin",
-					section_separators = "", -- No powerline arrows
-					component_separators = "",
+					theme = "catppuccin-mocha", -- FIX: was "catppuccin" — lualine needs the full flavor name
+
+					-- FIX: use tables not strings for separators
+					-- Empty tables = no separator character (flat look)
+					section_separators = { left = "", right = "" },
+					component_separators = { left = "", right = "" },
+
 					globalstatus = true, -- Single statusline (matches opt.laststatus=3)
 				},
 				sections = {
@@ -140,9 +148,14 @@ return {
 	-- <leader>t → opens a floating terminal window.
 	-- Inside the terminal, press Ctrl-\ Ctrl-n to enter NORMAL mode.
 	-- Then press <leader>t again to close it.
+	--
+	-- FIX BUG: was `keys = { "<leader>t" }` which caused a race condition
+	-- where the keymap fired before the plugin finished loading.
+	-- Using event = "VeryLazy" guarantees it's loaded before any key fires.
 	{
 		"akinsho/toggleterm.nvim",
-		keys = { "<leader>t" }, -- Only load when the keymap is pressed
+		--	keys = { "<leader>t" }, -- ← removed, caused race condition
+		event = "VeryLazy",
 		config = function()
 			require("toggleterm").setup({
 				direction = "float",
@@ -163,9 +176,14 @@ return {
 	-- Press - to open the parent directory as a text buffer.
 	-- Rename files by editing the text. Delete lines to delete files.
 	-- Press Enter on a file to open it. Press - again to go up a level.
+	--
+	-- FIX BUG: was `keys = { "-" }` which intercepts the native Vim "-"
+	-- motion during plugin load. Using cmd = { "Oil" } is safer —
+	-- the keymap in keymaps.lua sends <cmd>Oil<CR> which triggers the cmd.
 	{
 		"stevearc/oil.nvim",
-		keys = { "-" },
+		--	keys = { "-" }, -- ← removed, was stealing native Vim motion
+		cmd = { "Oil" },
 		opts = {
 			default_file_explorer = false, -- Let Snacks handle :edit .
 			view_options = {
