@@ -14,6 +14,9 @@ return {
 
 			-- ── Explorer (sidebar file tree) ───────────────────────
 			-- This replaces netrw (the built-in file browser).
+			-- NOTE: dotfiles visibility is NOT configured here.
+			-- The explorer is a picker in disguise — hidden files are
+			-- controlled under picker.sources.explorer below.
 			explorer = {
 				enabled = true,
 				replace_netrw = true, -- When you do :edit ., Snacks handles it
@@ -21,23 +24,33 @@ return {
 				win = {
 					list = {
 						keys = {
-							["."] = "toggle_hidden", -- Press . inside the tree to show/hide dotfiles
+							["."] = "toggle_hidden", -- Press . to toggle dotfiles while inside tree
 						},
 					},
 				},
-
-				filter = {
-					dotfiles = true, -- Show dotfiles (.env, .gitignore, etc.) by default
-					git_ignored = false, -- Show git-ignored files too
-				},
 			},
 
-			-- ── Picker (fuzzy finder, replaces Telescope) ──────────
+			-- ── Picker (fuzzy finder + explorer source) ────────────
+			-- FIX: dotfiles in the explorer sidebar are controlled HERE,
+			-- not under explorer.filter. Snacks explorer is a picker source
+			-- and reads hidden/ignored from picker.sources.explorer.
+			-- Without hidden = true here, .env / .gitignore won't appear
+			-- in the sidebar even if explorer.filter.dotfiles = false.
 			picker = {
 				enabled = true,
 				sources = {
 					explorer = {
 						auto_close = false, -- Keep explorer open when picker closes
+						hidden = true, -- Show dotfiles (.env, .gitignore, etc.) in sidebar
+						ignored = true, -- Show git-ignored files in sidebar
+					},
+					files = {
+						hidden = true, -- Also show dotfiles in <leader>ff
+						ignored = true,
+					},
+					grep = {
+						hidden = true, -- Also search inside dotfiles with <leader>fg
+						ignored = true,
 					},
 				},
 			},
