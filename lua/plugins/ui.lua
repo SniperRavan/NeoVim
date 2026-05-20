@@ -53,36 +53,51 @@ return {
 			-- set it in Alacritty's config: font.normal.family.
 			-- Recommended: JetBrainsMono Nerd Font
 			dashboard.section.header.val = {
-				[[                                                                       ]],
-				[[       ████ ██████           █████      ██                     ]],
-				[[      ███████████             █████                             ]],
-				[[      █████████ ███████████████████ ███   ███████████   ]],
-				[[     █████████  ███    █████████████ █████ ██████████████   ]],
-				[[    █████████ ██████████ █████████ █████ █████ ████ █████   ]],
-				[[  ███████████ ███    ███ █████████ █████ █████ ████ █████  ]],
-				[[ ██████  █████████████████████ ████ █████ █████ ████ ██████ ]],
+				[[                                                                       ]],
+				[[       ████ ██████           █████      ██                     ]],
+				[[      ███████████             █████                             ]],
+				[[      █████████ ███████████████████ ███   ███████████   ]],
+				[[     █████████  ███    █████████████ █████ ██████████████   ]],
+				[[    █████████ ██████████ █████████ █████ █████ ████ █████   ]],
+				[[  ███████████ ███    ███ █████████ █████ █████ ████ █████  ]],
+				[[ ██████  █████████████████████ ████ █████ █████ ████ ██████ ]],
 			}
 
 			-- ── Dashboard buttons ────────────────────────────────
 			-- Each button: display text, shortcut shown, what it does
 			dashboard.section.buttons.val = {
-				dashboard.button("f f", "󰈔  Find File", function()
-					Snacks.picker.files()
-				end),
-				dashboard.button("f n", "  New File", ":ene <BAR> startinsert <CR>"),
-				dashboard.button("f r", "  Recent Files", function()
-					Snacks.picker.recent()
-				end),
-				dashboard.button("f g", "󰈭  Find Text", function()
-					Snacks.picker.grep()
-				end),
-				dashboard.button("f c", "  Config", ":e $MYVIMRC<CR>"),
+				dashboard.button("f f", "󰈔  Find File", ":Telescope find_files<CR>"),
+				dashboard.button("f n", "  New File", ":ene <BAR> startinsert <CR>"),
+				dashboard.button("f r", "  Recent Files", ":Telescope oldfiles<CR>"),
+				dashboard.button("f g", "󰈭  Find Text", ":Telescope live_grep<CR>"),
+				dashboard.button("f c", "  Configuration", ":e $MYVIMRC<CR>"),
 				dashboard.button("q", "󰩈  Quit", ":qa<CR>"),
 			}
 
-			-- ── Footer: show current Neovim version ──────────────
+			local tagline = {
+				type = "text",
+				val = "Your ideas, in code.",
+				opts = { position = "center", hl = "Comment" },
+			}
+
 			local v = vim.version()
-			dashboard.section.footer.val = "⚡ Neovim v" .. v.major .. "." .. v.minor .. "." .. v.patch
+			local version_str = "Neovim v" .. v.major .. "." .. v.minor .. "." .. v.patch
+			local version_footer = {
+				type = "text",
+				val = "🟢 No sessions                      " .. version_str .. "  ",
+				opts = { position = "center", hl = "Comment" },
+			}
+
+			dashboard.config.layout = {
+				{ type = "padding", val = 2 },
+				dashboard.section.header,
+				{ type = "padding", val = 2 },
+				dashboard.section.buttons,
+				{ type = "padding", val = 2 },
+				tagline,
+				{ type = "padding", val = 1 },
+				version_footer,
+			}
 
 			alpha.setup(dashboard.opts)
 		end,
@@ -209,9 +224,19 @@ return {
 	-- ── Live Server ────────────────────────────────────────────
 	-- <leader>ls → starts a live-reloading web server for HTML/CSS/JS.
 	-- <leader>lx → stops it.
-	-- Requires the `live-server` npm package: npm i -g live-server
+	-- Requires: npm i -g live-server
+	--
+	-- NOTE: live-server.nvim v0.2.0+ removed setup().
+	-- Configuration is done via vim.g.live_server_* globals instead.
 	{
 		"barrett-ruth/live-server.nvim",
 		cmd = { "LiveServerStart", "LiveServerStop" },
+		init = function()
+			-- Port to serve on
+			vim.g.live_server_port = 5500
+
+			-- Open browser automatically when server starts
+			vim.g.live_server_open_browser = 1
+		end,
 	},
 }

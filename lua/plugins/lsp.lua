@@ -205,6 +205,11 @@ return {
 				default = { "lsp", "path", "snippets", "buffer" },
 			},
 
+			-- Tell blink.cmp to use LuaSnip for snippet expansion
+			snippets = {
+				preset = "luasnip",
+			},
+
 			signature = { enabled = true }, -- Show function signature as you type arguments
 		},
 	},

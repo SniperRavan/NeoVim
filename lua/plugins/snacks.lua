@@ -19,7 +19,7 @@ return {
 			-- controlled under picker.sources.explorer below.
 			explorer = {
 				enabled = true,
-				replace_netrw = true, -- When you do :edit ., Snacks handles it
+				-- replace_netrw = true, -- REMOVED: was auto-opening explorer on startup, fighting Alpha dashboard
 
 				win = {
 					list = {
@@ -87,7 +87,22 @@ return {
 	-- Press <leader> and wait a moment — a popup shows what keys do what.
 	{
 		"folke/which-key.nvim",
-		event = "VeryLazy", -- Load after startup (doesn't affect startup time)
-		opts = {},
+		event = "VeryLazy",
+		opts = {
+			-- Group labels — shown when you press <leader> and wait.
+			-- Without these, which-key shows the first single-key match
+			-- instead of waiting for the full sequence (e.g. "l" shows
+			-- "Focus Window Right" instead of the "l" group for Live Server).
+			spec = {
+				{ "<leader>f", group = "Find" },
+				{ "<leader>l", group = "Live Server" },
+				{ "<leader>c", group = "Copilot" },
+				{ "<leader>d", group = "Diagnostics" },
+				{ "<leader>r", group = "Rename" },
+				{ "<leader>g", group = "Global Search" },
+				{ "<leader>m", group = "Markdown" },
+				{ "<leader>w", group = "Window" },
+			},
+		},
 	},
 }

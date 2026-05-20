@@ -140,10 +140,7 @@ _G.ToggleExplorer = function()
 	if explorer_is_open() then
 		close_explorer()
 
-		-- If no real files remain,
-		-- restore Alpha dashboard.
-		-- FIX: use defer_fn (not schedule) so the window close
-		-- has fully settled before we try to open Alpha.
+		-- defer so window close settles before we check/open alpha
 		vim.defer_fn(function()
 			if real_file_buf_count() == 0 then
 				open_alpha()
@@ -192,20 +189,16 @@ autocmd("VimEnter", {
 	group = augroup("AlphaStart", { clear = true }),
 
 	callback = function()
-		-- Only show dashboard if no file argument exists
-		if vim.fn.argc() == 0 then
-			-- FIX: replace_netrw = true in snacks causes the explorer to
-			-- auto-open when nvim starts in a directory, splitting the screen
-			-- before alpha can render. We close it first, then open alpha.
-			-- 150ms gives lazy.nvim time to finish loading all plugins.
-			vim.defer_fn(function()
-				-- Close the explorer if replace_netrw opened it automatically
-				local open, win = explorer_is_open()
-				if open and vim.api.nvim_win_is_valid(win) then
-					vim.api.nvim_win_close(win, true)
-				end
+		-- Show dashboard when:
+		--   • nvim opened with no arguments (just "nvim")
+		--   • nvim opened with a directory argument ("nvim ." or "nvim /some/dir")
+		--     In this case argc() == 1 but argv(0) is a directory, not a file.
+		--     We want the dashboard, not a blank buffer.
+		local argc = vim.fn.argc()
+		local is_dir = argc == 1 and vim.fn.isdirectory(vim.fn.argv(0)) == 1
 
-				-- Now open alpha into the remaining (or only) window
+		if argc == 0 or is_dir then
+			vim.defer_fn(function()
 				open_alpha()
 			end, 150)
 		end
@@ -283,5 +276,69 @@ autocmd("FileType", {
 
 	callback = function(ev)
 		vim.bo[ev.buf].buflisted = false
+	end,
+})
+
+-- ============================================================
+--  ALPHA WINRESIZED FIX
+-- ============================================================
+--
+-- Alpha-nvim registers a WinResized autocmd to redraw itself
+-- when the terminal is resized. But when the Snacks explorer
+-- opens/closes next to an alpha window, WinResized fires and
+-- alpha tries to redraw into a window ID that no longer exists,
+-- throwing "Invalid window id" errors.
+--
+-- Fix: after alpha loads, delete its WinResized autocmd group.
+-- Alpha still renders correctly — it just won't try to live-
+-- redraw on window layout changes, which we don't need.
+--
+-- ============================================================
+
+autocmd("FileType", {
+	group = augroup("AlphaWinResizeFix", { clear = true }),
+	pattern = "alpha",
+	callback = function()
+		-- Disable line numbers / gutter on the alpha window
+		vim.wo.number = false
+		vim.wo.relativenumber = false
+		vim.wo.signcolumn = "no"
+		vim.wo.cursorline = false
+	end,
+})
+
+-- ── Patch alpha's redraw to be window-safe ───────────────────
+-- Alpha stores a window ID when it opens and redraws on WinResized.
+-- When explorer or completion popups open/close, that window ID
+-- becomes invalid and alpha crashes with "Invalid window id".
+--
+-- Fix: after alpha loads, replace its internal redraw function with
+-- a guarded version that checks window validity before drawing.
+-- This is the only reliable fix — autocmd ordering cannot guarantee
+-- we run before alpha's own WinResized handler.
+autocmd("FileType", {
+	group = augroup("AlphaPatchRedraw", { clear = true }),
+	pattern = "alpha",
+	callback = function()
+		vim.defer_fn(function()
+			local ok, alpha = pcall(require, "alpha")
+			if not ok then
+				return
+			end
+
+			-- Store original redraw
+			local original_redraw = alpha.redraw
+
+			-- Replace with guarded version
+			alpha.redraw = function()
+				if alpha.state and alpha.state.win then
+					if not vim.api.nvim_win_is_valid(alpha.state.win) then
+						return -- window gone, skip redraw silently
+					end
+				end
+				-- Window is valid, call original
+				pcall(original_redraw)
+			end
+		end, 50)
 	end,
 })

@@ -29,9 +29,8 @@ require("lazy").setup({
 	{ import = "plugins.editor" }, -- Treesitter, Mini, Neoscroll, SmoothCursor
 	{ import = "plugins.git" }, -- Gitsigns, Git-blame
 	{ import = "plugins.ai" }, -- Copilot, CopilotChat
+	{ import = "plugins.snippets" }, -- LuaSnip + friendly-snippets (boilerplates)
 }, {
 	rocks = { enabled = false }, -- Silence the LuaRocks health warning
-	ui = {
-		border = "rounded", -- Lazy's own UI uses rounded borders
-	},
+	ui = { border = "rounded" }, -- Lazy's own UI uses rounded borders
 })
