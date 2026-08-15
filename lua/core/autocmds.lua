@@ -49,18 +49,24 @@ local function is_explorer(buf)
 	return ft:find("snacks") ~= nil and ft:find("explorer") ~= nil
 end
 
--- ── Is this a real editable file buffer? ─────────────────────
--- Excludes:
---   • Alpha
---   • Explorer
---   • terminals
---   • special buffers
 local function is_real_file(buf)
-	return vim.api.nvim_buf_is_valid(buf)
-		and vim.bo[buf].buflisted
-		and vim.bo[buf].buftype == ""
-		and not is_alpha(buf)
-		and not is_explorer(buf)
+	if not vim.api.nvim_buf_is_valid(buf) then
+		return false
+	end
+	if not vim.bo[buf].buflisted then
+		return false
+	end
+	if vim.bo[buf].buftype ~= "" then
+		return false
+	end
+	if is_alpha(buf) or is_explorer(buf) then
+		return false
+	end
+	local name = vim.api.nvim_buf_get_name(buf)
+	if name == "" and not vim.bo[buf].modified then
+		return false
+	end
+	return true
 end
 
 -- ── Count all real file buffers ──────────────────────────────
@@ -189,15 +195,16 @@ autocmd("VimEnter", {
 	group = augroup("AlphaStart", { clear = true }),
 
 	callback = function()
-		-- Show dashboard when:
-		--   • nvim opened with no arguments (just "nvim")
-		--   • nvim opened with a directory argument ("nvim ." or "nvim /some/dir")
-		--     In this case argc() == 1 but argv(0) is a directory, not a file.
-		--     We want the dashboard, not a blank buffer.
 		local argc = vim.fn.argc()
 		local is_dir = argc == 1 and vim.fn.isdirectory(vim.fn.argv(0)) == 1
 
-		if argc == 0 or is_dir then
+		if is_dir then
+			local target_dir = vim.fn.fnamemodify(vim.fn.argv(0), ":p")
+			vim.fn.chdir(target_dir)
+			vim.defer_fn(function()
+				open_alpha()
+			end, 150)
+		elseif argc == 0 then
 			vim.defer_fn(function()
 				open_alpha()
 			end, 150)
@@ -295,7 +302,7 @@ autocmd("FileType", {
 --
 -- ============================================================
 
-autocmd("FileType", {
+autocmd({ "FileType", "BufEnter", "WinEnter" }, {
 	group = augroup("AlphaWinResizeFix", { clear = true }),
 	pattern = "alpha",
 	callback = function()
