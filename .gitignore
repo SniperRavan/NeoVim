@@ -29,4 +29,11 @@ Thumbs.db
 
 lazyvim.json
 
+# Archives & binaries
+*.tar.gz
+*.tgz
+*.zip
+*.bin
+
+
 
