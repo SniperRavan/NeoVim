@@ -342,3 +342,38 @@ autocmd("FileType", {
 		end, 50)
 	end,
 })
+
+-- ============================================================
+--  TERMINAL & EDITING HELPERS
+-- ============================================================
+
+-- ── Terminal: auto-enter insert mode, hide line numbers ───────
+autocmd("TermOpen", {
+	group = augroup("TermStyle", { clear = true }),
+	callback = function()
+		vim.cmd("startinsert")
+		vim.wo.number = false
+		vim.wo.relativenumber = false
+	end,
+})
+
+-- ── Yank notification ─────────────────────────────────────────
+autocmd("TextYankPost", {
+	group = augroup("YankNotify", { clear = true }),
+	callback = function()
+		local count = #vim.v.event.regcontents
+		vim.notify("Yanked " .. count .. " line(s)", vim.log.levels.INFO, { title = "Clipboard" })
+	end,
+})
+
+-- ── Ghost auto-save for live preview ──────────────────────────
+-- HTML/CSS/JS files save silently when leaving insert mode or changing text in normal mode.
+-- Safe: will NOT thrash disk or formatters on every single keystroke.
+autocmd({ "TextChanged", "InsertLeave" }, {
+	group = augroup("GhostSave", { clear = true }),
+	pattern = { "*.html", "*.css", "*.js" },
+	callback = function()
+		vim.cmd("silent! write")
+	end,
+})
+
