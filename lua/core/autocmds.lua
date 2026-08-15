@@ -40,13 +40,10 @@ local function is_alpha(buf)
 	return vim.bo[buf].filetype == "alpha"
 end
 
--- ── Is this buffer Snacks Explorer? ──────────────────────────
--- FIX: original used exact string match ("snacks_explorer" or "snacks-explorer").
--- Snacks filetype can vary by version. Pattern match is safer.
+-- ── Is this buffer Snacks Explorer or picker? ─────────────────
 local function is_explorer(buf)
 	local ft = vim.bo[buf].filetype
-	-- Match anything that contains both "snacks" and "explorer"
-	return ft:find("snacks") ~= nil and ft:find("explorer") ~= nil
+	return ft:find("^snacks") ~= nil
 end
 
 local function is_real_file(buf)
@@ -84,23 +81,28 @@ end
 
 -- ── Is Snacks Explorer currently open? ───────────────────────
 local function explorer_is_open()
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		local buf = vim.api.nvim_win_get_buf(win)
-
-		if is_explorer(buf) then
-			return true, win
-		end
-	end
-
-	return false, nil
+	local pickers = Snacks.picker.get({ source = "explorer" })
+	return #pickers > 0
 end
 
 -- ── Open Alpha dashboard ─────────────────────────────────────
--- FIX: always wrap in vim.schedule so Alpha renders after the
--- current event (BufDelete, window close, etc.) fully settles.
--- Calling vim.cmd("Alpha") bare from a callback fails silently.
 local function open_alpha()
 	vim.schedule(function()
+		local target_win = nil
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			if vim.api.nvim_win_is_valid(win) then
+				local buf = vim.api.nvim_win_get_buf(win)
+				if not is_explorer(buf) then
+					target_win = win
+					break
+				end
+			end
+		end
+
+		if target_win and vim.api.nvim_win_is_valid(target_win) then
+			vim.api.nvim_set_current_win(target_win)
+		end
+
 		vim.cmd("Alpha")
 	end)
 end
@@ -118,10 +120,8 @@ end
 
 -- ── Close Snacks Explorer sidebar ────────────────────────────
 local function close_explorer()
-	local open, win = explorer_is_open()
-
-	if open and vim.api.nvim_win_is_valid(win) then
-		vim.api.nvim_win_close(win, true)
+	for _, p in ipairs(Snacks.picker.get({ source = "explorer" })) do
+		p:close()
 	end
 end
 
@@ -151,7 +151,7 @@ _G.ToggleExplorer = function()
 			if real_file_buf_count() == 0 then
 				open_alpha()
 			end
-		end, 50)
+		end, 100)
 
 		return
 	end
