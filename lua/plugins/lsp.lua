@@ -188,8 +188,8 @@ return {
 		opts = {
 			keymap = {
 				preset = "default",
-				["<Tab>"] = { "select_next", "fallback" }, -- Tab → next suggestion
-				["<S-Tab>"] = { "select_prev", "fallback" }, -- Shift+Tab → previous
+				["<Tab>"] = { "snippet_forward", "select_next", "fallback" }, -- Tab → snippet jump or next suggestion
+				["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback" }, -- Shift+Tab → snippet jump back or previous
 				["<CR>"] = { "accept", "fallback" }, -- Enter → accept suggestion
 			},
 
