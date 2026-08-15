@@ -302,7 +302,7 @@ autocmd("FileType", {
 --
 -- ============================================================
 
-autocmd({ "FileType", "BufEnter", "WinEnter" }, {
+autocmd("FileType", {
 	group = augroup("AlphaWinResizeFix", { clear = true }),
 	pattern = "alpha",
 	callback = function()
@@ -311,6 +311,21 @@ autocmd({ "FileType", "BufEnter", "WinEnter" }, {
 		vim.wo.relativenumber = false
 		vim.wo.signcolumn = "no"
 		vim.wo.cursorline = false
+	end,
+})
+
+-- ── Restore line numbers when entering normal editable files ──
+autocmd("BufEnter", {
+	group = augroup("RestoreLineNumbers", { clear = true }),
+	callback = function(ev)
+		local ft = vim.bo[ev.buf].filetype
+		local bt = vim.bo[ev.buf].buftype
+		if ft ~= "alpha" and not ft:find("^snacks") and bt == "" then
+			vim.wo.number = true
+			vim.wo.relativenumber = true
+			vim.wo.signcolumn = "yes"
+			vim.wo.cursorline = true
+		end
 	end,
 })
 
