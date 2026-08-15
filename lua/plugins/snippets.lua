@@ -51,28 +51,9 @@ return {
 		dependencies = { "rafamadriz/friendly-snippets" },
 
 		config = function()
-			local luasnip = require("luasnip")
-
 			-- Load the friendly-snippets collection.
 			-- This gives you snippets for HTML, CSS, JS, TS, Lua, Python, etc.
 			require("luasnip.loaders.from_vscode").lazy_load()
-
-			-- Tab → expand snippet or jump to next field
-			vim.keymap.set({ "i", "s" }, "<Tab>", function()
-				if luasnip.expand_or_jumpable() then
-					luasnip.expand_or_jump()
-				else
-					-- Fall through to normal Tab behaviour
-					vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
-				end
-			end, { desc = "Snippet expand / jump next" })
-
-			-- Shift-Tab → jump to previous snippet field
-			vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
-				if luasnip.jumpable(-1) then
-					luasnip.jump(-1)
-				end
-			end, { desc = "Snippet jump previous" })
 		end,
 	},
 
