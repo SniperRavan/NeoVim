@@ -66,10 +66,10 @@ return {
 			-- ── Dashboard buttons ────────────────────────────────
 			-- Each button: display text, shortcut shown, what it does
 			dashboard.section.buttons.val = {
-				dashboard.button("f f", "󰈔  Find File", ":Telescope find_files<CR>"),
+				dashboard.button("f f", "󰈔  Find File", ":lua Snacks.picker.files()<CR>"),
 				dashboard.button("f n", "  New File", ":ene <BAR> startinsert <CR>"),
-				dashboard.button("f r", "  Recent Files", ":Telescope oldfiles<CR>"),
-				dashboard.button("f g", "󰈭  Find Text", ":Telescope live_grep<CR>"),
+				dashboard.button("f r", "  Recent Files", ":lua Snacks.picker.recent()<CR>"),
+				dashboard.button("f g", "󰈭  Find Text", ":lua Snacks.picker.grep()<CR>"),
 				dashboard.button("f c", "  Configuration", ":e $MYVIMRC<CR>"),
 				dashboard.button("q", "󰩈  Quit", ":qa<CR>"),
 			}
