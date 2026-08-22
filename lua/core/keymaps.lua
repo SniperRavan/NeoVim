@@ -61,9 +61,11 @@ map("n", "<leader>j", "<C-w>j", { desc = "Focus Window Down" })
 map("n", "<leader>k", "<C-w>k", { desc = "Focus Window Up" })
 
 -- ── Buffer navigation ─────────────────────────────────────────
--- Shift+L / Shift+H cycles through open file tabs (bufferline).
+-- Shift+L / Shift+H (or Ctrl+Tab / Ctrl+Shift+Tab) cycles through open file tabs (bufferline).
 map("n", "<S-l>", ":BufferLineCycleNext<CR>", { desc = "Next Buffer Tab" })
 map("n", "<S-h>", ":BufferLineCyclePrev<CR>", { desc = "Prev Buffer Tab" })
+map("n", "<C-Tab>", ":BufferLineCycleNext<CR>", { desc = "Next Buffer Tab (Ctrl+Tab)" })
+map("n", "<C-S-Tab>", ":BufferLineCyclePrev<CR>", { desc = "Prev Buffer Tab (Ctrl+Shift+Tab)" })
 
 -- <leader>x → close the current buffer without closing the window.
 -- The autocmd in autocmds.lua then restores the Alpha dashboard automatically.
