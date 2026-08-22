@@ -29,7 +29,7 @@ A modern, modular Neovim configuration built with Lua. Designed for web developm
 | 🤖 AI | GitHub Copilot (inline), CopilotChat (floating chat) |
 | 🌿 Git | Gitsigns (gutter indicators), Git Blame (inline) |
 | 💻 Terminal | ToggleTerm (floating, `<leader>t`) |
-| ✨ Editor | Mini.nvim, Neoscroll, SmoothCursor, vim-visual-multi (multi-cursor) |
+| ✨ Editor | Comment.nvim (smart multi/single line `Ctrl+/`), Mini.nvim, Neoscroll, SmoothCursor, Visual-Multi |
 | 🌐 Web Dev | Markdown Preview, Live Server, ghost auto-save for HTML/CSS/JS |
 
 ---
@@ -49,7 +49,7 @@ A modern, modular Neovim configuration built with Lua. Designed for web developm
 │       ├── snacks.lua         ← Explorer, Picker, Notifier, Zen
 │       ├── ui.lua             ← Catppuccin, Alpha, Bufferline, Lualine, ToggleTerm, Oil
 │       ├── lsp.lua            ← Mason, LSPconfig, Conform, Blink.cmp
-│       ├── editor.lua         ← Treesitter, Mini, Neoscroll, SmoothCursor, Visual-Multi
+│       ├── editor.lua         ← Treesitter, Comment.nvim, Mini, Neoscroll, SmoothCursor, Visual-Multi
 │       ├── git.lua            ← Gitsigns, Git-blame
 │       └── ai.lua             ← Copilot, CopilotChat
 ├── screenshots/
@@ -137,8 +137,16 @@ Leader key: **`Space`**
 | Key | Action |
 |-----|--------|
 | `Shift-L / Shift-H` | Next / prev buffer tab |
+| `Ctrl-Tab / Ctrl-Shift-Tab` | Next / prev buffer tab |
 | `Space x` | Close current buffer |
 | `Space t` | Toggle floating terminal |
+
+### Editing & Commenting
+
+| Key | Action |
+|-----|--------|
+| `Ctrl-/` (or `Ctrl-_`) | Smart comment toggle: Multi-line block (`/* */`) or single-line (`#`) |
+| `Ctrl-n` | Multi-cursor (select word, press again for next) |
 
 ### LSP (active in code files)
 
