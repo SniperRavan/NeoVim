@@ -59,6 +59,7 @@ The learning curve is steep for the first week, but once it clicks, you edit cod
 | Autocomplete | blink.cmp | Appears as you type |
 | LSP (smart code) | nvim-lspconfig + mason | Automatic |
 | Formatter | conform.nvim | Runs on every save |
+| Commenting | Comment.nvim | `Ctrl + /` (multi-line or single-line) |
 | Terminal | toggleterm.nvim | `Space t` |
 | Git indicators | gitsigns.nvim | Visible in gutter |
 | AI suggestions | copilot.lua | Appears as you type |
@@ -328,6 +329,15 @@ All movement is done in **NORMAL mode**.
 4. Keep pressing `Ctrl-n` to add more
 5. Now type normally — all cursors edit simultaneously
 
+### Commenting (Smart Multi-line / Single-line)
+
+Press **`Ctrl + /`** (or `Ctrl + _` in some terminals) to comment or uncomment code:
+- **Normal mode:** Toggles comment on the current line.
+- **Visual mode:** Select multiple lines and press `Ctrl + /` to comment the block.
+- **Smart multi-line behavior:**
+  - In languages with block comments (JS, TS, C, C++, Rust, Go, HTML, CSS, Lua, Java, etc.), it uses block syntax (e.g., `/* ... */`, `<!-- ... -->`, `--[[ ... ]]`).
+  - In languages with single-line comments only (Python, Bash, YAML, TOML, etc.), it automatically uses single-line syntax (e.g., `# ...`).
+
 ---
 
 ## 8. Saving and Closing
@@ -433,8 +443,8 @@ This is powerful: you can:
 
 | Key | Action |
 |-----|--------|
-| `Shift-L` | Go to the next buffer (right in the tab bar) |
-| `Shift-H` | Go to the previous buffer (left in the tab bar) |
+| `Shift-L` (or `Ctrl-Tab`) | Go to the next buffer (right in the tab bar) |
+| `Shift-H` (or `Ctrl-Shift-Tab`) | Go to the previous buffer (left in the tab bar) |
 | `Space x` | Close the current buffer |
 
 ### Splits (multiple files side by side)
@@ -785,9 +795,16 @@ Opens your `.md` file in the browser with live preview. The browser updates as y
 | `Space f g` | Search text in files (live grep) |
 | `Space f r` | Recent files |
 | `Space g` | Global file search (home directory) |
-| `Shift-L` | Next buffer/tab |
-| `Shift-H` | Previous buffer/tab |
+| `Shift-L` (or `Ctrl-Tab`) | Next buffer/tab |
+| `Shift-H` (or `Ctrl-Shift-Tab`) | Previous buffer/tab |
 | `Space x` | Close current buffer |
+
+### Editing & Commenting
+
+| Key | Action |
+|-----|--------|
+| `Ctrl-/` (or `Ctrl-_`) | Smart comment toggle: Multi-line block (`/* */`) or single-line (`#`) |
+| `Ctrl-n` | Multi-cursor (select word, press again for next) |
 
 ### Terminal
 
