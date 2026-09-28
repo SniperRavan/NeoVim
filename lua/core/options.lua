@@ -55,3 +55,6 @@ opt.incsearch = true -- Show matches as you type
 
 -- ── Undo ─────────────────────────────────────────────────────
 opt.undofile = true -- Persist undo history across sessions
+
+-- ── Selection ─────────────────────────────────────────────────
+opt.keymodel = "startsel,stopsel" -- Allow Shift + Arrow keys to start and stop visual selection

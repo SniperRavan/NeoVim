@@ -28,7 +28,7 @@ A modern, modular Neovim configuration built with Lua. Designed for web developm
 | 🌳 Syntax | Treesitter (accurate highlighting + indentation) |
 | 🤖 AI | GitHub Copilot (inline), CopilotChat (floating chat) |
 | 🌿 Git | Gitsigns (gutter indicators), Git Blame (inline) |
-| 💻 Terminal | ToggleTerm (floating, `<leader>t`) |
+| 💻 Terminal | ToggleTerm (bottom panel, `<leader>t` or `Ctrl+\``) |
 | ✨ Editor | Comment.nvim (smart multi/single line `Ctrl+/`), Mini.nvim, Neoscroll, SmoothCursor, Visual-Multi |
 | 🌐 Web Dev | Markdown Preview, Live Server, ghost auto-save for HTML/CSS/JS |
 
@@ -139,7 +139,7 @@ Leader key: **`Space`**
 | `Shift-L / Shift-H` | Next / prev buffer tab |
 | `Ctrl-Tab / Ctrl-Shift-Tab` | Next / prev buffer tab |
 | `Space x` | Close current buffer |
-| `Space t` | Toggle floating terminal |
+| `Space t` or `Ctrl-` ` | Toggle bottom terminal panel (VS Code style) |
 
 ### Editing & Commenting
 

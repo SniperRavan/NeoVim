@@ -117,8 +117,8 @@ return {
 					-- Don't show Alpha or explorer in the tab bar
 					custom_filter = function(buf)
 						local ft = vim.bo[buf].filetype
-						-- Filter out alpha and any snacks explorer variant
-						return ft ~= "alpha" and not (ft:find("snacks") and ft:find("explorer"))
+						-- Filter out alpha, toggleterm, and snacks explorer
+						return ft ~= "alpha" and ft ~= "toggleterm" and not (ft:find("snacks") and ft:find("explorer"))
 					end,
 				},
 			})
@@ -159,31 +159,29 @@ return {
 		end,
 	},
 
-	-- ── ToggleTerm: floating terminal ──────────────────────────
-	-- <leader>t → opens a floating terminal window.
-	-- Inside the terminal, press Ctrl-\ Ctrl-n to enter NORMAL mode.
-	-- Then press <leader>t again to close it.
-	--
-	-- FIX BUG: was `keys = { "<leader>t" }` which caused a race condition
-	-- where the keymap fired before the plugin finished loading.
-	-- Using event = "VeryLazy" guarantees it's loaded before any key fires.
+	-- ── ToggleTerm: VS Code style bottom terminal panel ───────
+	-- <leader>t or Ctrl+` toggles the bottom terminal split.
+	-- Toggling hide preserves running processes in the background.
+	-- Typing 'exit' terminates the shell and closes the window.
 	{
 		"akinsho/toggleterm.nvim",
-		--	keys = { "<leader>t" }, -- ← removed, caused race condition
+		cmd = { "ToggleTerm", "TermExec", "ToggleTermToggleAll" },
 		event = "VeryLazy",
 		config = function()
 			require("toggleterm").setup({
-				direction = "float",
-				shell = vim.o.shell, -- Uses your $SHELL (bash/zsh/fish/etc.)
-
-				float_opts = {
-					border = "rounded",
-					winblend = 0, -- Terminal is fully opaque (readable)
-				},
+				size = 15,
+				open_mapping = [[<C-`>]],
+				hide_numbers = true,
+				shade_terminals = false,
+				start_in_insert = true,
+				insert_mappings = true,
+				terminal_mappings = true,
+				persist_size = true,
+				persist_mode = true,
+				direction = "horizontal",
+				close_on_exit = true,
+				shell = vim.o.shell,
 			})
-
-			-- Purple border around the floating terminal
-			vim.api.nvim_set_hl(0, "FloatBorder", { fg = "#cba6f7", bg = "NONE" })
 		end,
 	},
 

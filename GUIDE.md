@@ -18,7 +18,7 @@
 9. [The File Explorer (Snacks)](#9-the-file-explorer-snacks)
 10. [Opening and Switching Files](#10-opening-and-switching-files)
 11. [Searching (Fuzzy Finder)](#11-searching-fuzzy-finder)
-12. [The Floating Terminal](#12-the-floating-terminal)
+12. [The Integrated Terminal](#12-the-integrated-terminal-vs-code-style-bottom-panel)
 13. [Language Servers (LSP)](#13-language-servers-lsp)
 14. [Autocomplete (Blink.cmp)](#14-autocomplete-blinkcmp)
 15. [Formatting on Save (Conform)](#15-formatting-on-save-conform)
@@ -60,7 +60,7 @@ The learning curve is steep for the first week, but once it clicks, you edit cod
 | LSP (smart code) | nvim-lspconfig + mason | Automatic |
 | Formatter | conform.nvim | Runs on every save |
 | Commenting | Comment.nvim | `Ctrl + /` (multi-line or single-line) |
-| Terminal | toggleterm.nvim | `Space t` |
+| Terminal | toggleterm.nvim | `Space t` or `Ctrl + \`` |
 | Git indicators | gitsigns.nvim | Visible in gutter |
 | AI suggestions | copilot.lua | Appears as you type |
 | AI chat | CopilotChat.nvim | `Space c c` |
@@ -178,18 +178,40 @@ This is where you spend most of your time: moving around, copying, deleting, sea
 **How to exit:** Press `Escape`.  
 **Status bar shows:** `INSERT`
 
-### VISUAL mode
+### VISUAL mode (Selecting text without a mouse)
 
-**What it is:** Select text.  
-**How to enter:** Press `v` (character select), `V` (line select), `Ctrl-v` (block select).  
-**How to exit:** Press `Escape`.  
-**Status bar shows:** `VISUAL`
+**What it is:** Select text with the keyboard — no mouse needed!  
+**How to get here:** Press `v`, `V`, or `Shift + Arrow keys`.  
+**How to exit / cancel selection:** Press `Escape`.  
+**Status bar shows:** `VISUAL` (or `V-LINE` / `V-BLOCK`)
 
-After selecting, you can:
-- `d` → delete selection
-- `y` → copy (yank) selection
-- `>` / `<` → indent / outdent
-- `<leader>cc` → send to Copilot Chat
+#### 1. Shift + Arrow keys (VS Code Muscle Memory)
+* Hold **`Shift` + `Up / Down / Left / Right`** from NORMAL or INSERT mode to start selecting text just like in VS Code.
+
+#### 2. The Three Visual Modes
+* **`v` (Character selection):** Place cursor at start, press `v`, then move with `h`/`j`/`k`/`l` (or arrow keys, `w`, `b`, `$`).
+* **`V` (Shift + v — Line selection):** Selects entire lines. Press `V`, then press `j` to select lines downwards or `k` upwards.
+* **`Ctrl + v` (Block selection):** Selects a rectangular column across multiple lines (great for multi-line edits).
+
+#### 3. "Superhuman" Speed: Text Objects (Select instantly without moving cursor!)
+You don't need to manually drag a selection:
+* **`viw`** → Select inner word (the word under cursor)
+* **`vaw`** → Select word + surrounding whitespace
+* **`vi"`** → Select everything inside quotes `"..."`
+* **`va"`** → Select quotes + inside content
+* **`vi(`** or **`vib`** → Select everything inside parentheses `(...)`
+* **`vi{`** or **`viB`** → Select everything inside curly braces `{...}` (function / CSS body)
+* **`vip`** → Select entire paragraph / code block
+* **`ggVG`** → Select the ENTIRE file (`gg` = top, `V` = line visual, `G` = bottom)
+
+#### What to do once text is selected
+* **`y`** → Copy (yank) to system clipboard
+* **`d`** → Delete (cut)
+* **`c`** → Change (delete and immediately start typing)
+* **`Ctrl + /`** → Comment / uncomment selection
+* **`>`** or **`<`** → Indent / outdent selection
+* **`Space c c`** → Chat about selection with Copilot AI
+* **`Escape`** → Cancel selection
 
 ### COMMAND mode
 
@@ -497,28 +519,42 @@ Use this when you can't remember which project a file is in.
 
 ---
 
-## 12. The Floating Terminal
+## 12. The Integrated Terminal (VS Code Style Bottom Panel)
 
-Press **`Space t`** to open a floating terminal on top of everything.
+Press **`Space t`** or **`Ctrl + \``** to toggle the terminal panel docked at the bottom of your screen — exactly like VS Code!
 
 The terminal runs your default shell (`$SHELL` — bash, zsh, fish, etc.).
 
-### Inside the terminal
+### How it works (Dock, Hide & Terminate)
 
-| Key | Action |
-|-----|--------|
-| Type normally | Run commands |
-| `Ctrl-\` then `Ctrl-n` | Exit terminal INSERT mode → enter NORMAL mode |
-| `Space t` (in NORMAL mode) | Close the terminal |
+1. **Open:** Press `Space t` or `Ctrl + \`` from any file to open the bottom terminal panel.
+2. **Hide (Keep Running):**
+   - While typing in the terminal, press **`Ctrl + \``** or **`Ctrl + t`** to immediately hide it.
+   - Or press **`Esc Esc`** (or `Ctrl-\ Ctrl-n`) to enter NORMAL mode, then press `Space t`.
+   - Your background processes (e.g. `npm run dev`), current directory, and shell session stay **alive** in the background.
+3. **Re-open:** Press `Space t` or `Ctrl + \`` anytime to bring it back up exactly where you left off.
+4. **Terminate (Kill session):** Simply type **`exit`** (or press `Ctrl + d`) inside the terminal. The process terminates and the bottom panel closes cleanly.
+
+### Terminal shortcuts
+
+| Key | Mode | Action |
+|-----|------|--------|
+| Type normally | Terminal | Run shell commands |
+| `Ctrl + \`` or `Ctrl + t` | Terminal | Hide terminal panel instantly (process keeps running) |
+| `Esc Esc` (or `Ctrl-\ Ctrl-n`) | Terminal | Switch to NORMAL mode (scroll up/down with `k`/`j`, copy text) |
+| `i` or `a` | Normal (in terminal) | Return to typing in the terminal |
+| `Space t` | Normal | Toggle / Hide bottom terminal panel |
+| `exit` (or `Ctrl-d`) | Shell | Terminate the terminal session and close panel |
 
 ### Common workflow
 
 ```
-Space t           → open terminal
-npm run dev       → start your dev server
-Ctrl-\ Ctrl-n     → go back to NORMAL mode without closing terminal
-Space t           → hide terminal (it keeps running in background)
-Space t           → show it again
+Space t (or Ctrl+`) → open bottom terminal
+npm run dev         → start your dev server
+Ctrl + ` (or Ctrl+t)→ hide terminal (dev server keeps running in background!)
+... edit your code in peace ...
+Space t (or Ctrl+`) → bring terminal back up to view logs
+exit                → terminate server & shell and close terminal window
 ```
 
 ---
@@ -542,6 +578,7 @@ An LSP (Language Server Protocol) server is a program that understands your prog
 | `ts_ls` | TypeScript + JavaScript | Yes |
 | `html` | HTML | Yes |
 | `cssls` | CSS | Yes |
+| `emmet_language_server` | Emmet (HTML/CSS abbreviations: `!`, `div.box`, etc.) | Yes |
 
 ### LSP keymaps (active when a supported file is open)
 

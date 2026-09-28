@@ -14,7 +14,9 @@ return {
 	-- the ability for other plugins to understand code structure.
 	{
 		"nvim-treesitter/nvim-treesitter",
+		branch = "master",
 		build = ":TSUpdate", -- Update parsers after plugin updates
+		cmd = { "TSUpdate", "TSInstall", "TSInstallSync", "TSUninstall", "TSUpdateSync" },
 		event = { "BufReadPost", "BufNewFile" }, -- Load when you open any file
 
 		config = function()
@@ -220,8 +222,7 @@ return {
 					-- Uncomment
 					if is_block and right ~= "" then
 						if #lines == 1 then
-							local indent, content =
-								lines[1]:match("^(%s*)" .. l_esc .. "%s*(.-)%s*" .. r_esc .. "%s*$")
+							local indent, content = lines[1]:match("^(%s*)" .. l_esc .. "%s*(.-)%s*" .. r_esc .. "%s*$")
 							if indent and content then
 								lines[1] = indent .. content
 							end

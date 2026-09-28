@@ -71,12 +71,36 @@ map("n", "<C-S-Tab>", ":BufferLineCyclePrev<CR>", { desc = "Prev Buffer Tab (Ctr
 -- The autocmd in autocmds.lua then restores the Alpha dashboard automatically.
 map("n", "<leader>x", ":bdelete<CR>", { desc = "Close Current Buffer" })
 
--- ── Terminal ──────────────────────────────────────────────────
--- <leader>t → open a floating terminal over everything.
--- Press <leader>t again (or Ctrl-\ Ctrl-n then <leader>t) to close.
--- NOTE: ToggleTerm loads via event = "VeryLazy" in plugins/ui.lua,
--- so it is guaranteed to be loaded before this keymap can fire.
-map("n", "<leader>t", "<cmd>ToggleTerm<CR>", { desc = "Toggle Floating Terminal" })
+-- ── Selection with Shift + Arrow keys (VS Code muscle memory) ─
+-- Normal mode: Shift + Arrows starts visual selection
+map("n", "<S-Up>", "v<Up>", { desc = "Select Up" })
+map("n", "<S-Down>", "v<Down>", { desc = "Select Down" })
+map("n", "<S-Left>", "v<Left>", { desc = "Select Left" })
+map("n", "<S-Right>", "v<Right>", { desc = "Select Right" })
+
+-- Visual mode: Shift + Arrows extends selection
+map("v", "<S-Up>", "<Up>", { desc = "Extend Selection Up" })
+map("v", "<S-Down>", "<Down>", { desc = "Extend Selection Down" })
+map("v", "<S-Left>", "<Left>", { desc = "Extend Selection Left" })
+map("v", "<S-Right>", "<Right>", { desc = "Extend Selection Right" })
+
+-- Insert mode: Shift + Arrows starts visual selection from cursor
+map("i", "<S-Up>", "<Esc>v<Up>", { desc = "Select Up" })
+map("i", "<S-Down>", "<Esc>v<Down>", { desc = "Select Down" })
+map("i", "<S-Left>", "<Esc>v<Left>", { desc = "Select Left" })
+map("i", "<S-Right>", "<Esc>v<Right>", { desc = "Select Right" })
+
+-- ── Terminal (VS Code style bottom panel) ────────────────────
+-- <leader>t or Ctrl+` toggles the bottom terminal panel.
+-- While typing in terminal: Ctrl+` or Ctrl+t hides it immediately.
+-- Press Esc Esc to enter normal mode in terminal to scroll or copy text.
+-- When hidden, background commands keep running.
+-- Type 'exit' (or Ctrl+d) in the terminal to terminate it.
+map("n", "<leader>t", "<cmd>ToggleTerm<CR>", { desc = "Toggle Terminal Panel (Bottom)" })
+map("n", "<C-`>", "<cmd>ToggleTerm<CR>", { desc = "Toggle Terminal Panel (Ctrl+`)" })
+map("t", "<C-`>", "<cmd>ToggleTerm<CR>", { desc = "Hide Terminal Panel (Ctrl+`)" })
+map("t", "<C-t>", "<cmd>ToggleTerm<CR>", { desc = "Hide Terminal Panel (Ctrl+t)" })
+map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit Terminal Mode to Normal Mode" })
 
 -- ── AI / Copilot Chat ─────────────────────────────────────────
 map({ "n", "v" }, "<leader>cc", "<cmd>CopilotChatToggle<CR>", { desc = "Toggle Copilot Chat" })
@@ -84,8 +108,12 @@ map({ "n", "v" }, "<leader>ce", "<cmd>CopilotChatExplain<CR>", { desc = "Copilot
 
 -- ── Diagnostics (LSP error/warning navigation) ───────────────
 -- Jump between errors/warnings detected by the language server.
-map("n", "<leader>dn", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
-map("n", "<leader>dp", vim.diagnostic.goto_prev, { desc = "Prev Diagnostic" })
+map("n", "<leader>dn", function()
+	vim.diagnostic.jump({ count = 1, float = true })
+end, { desc = "Next Diagnostic" })
+map("n", "<leader>dp", function()
+	vim.diagnostic.jump({ count = -1, float = true })
+end, { desc = "Prev Diagnostic" })
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show Diagnostic Popup" })
 
 -- ── Web Dev tools ─────────────────────────────────────────────

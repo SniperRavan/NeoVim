@@ -37,6 +37,7 @@ return {
 					"ts_ls", -- TypeScript & JavaScript
 					"html", -- HTML
 					"cssls", -- CSS
+					"emmet_language_server", -- Emmet (VS Code abbreviations: ! -> HTML5 boilerplate, div.box, etc.)
 				},
 			})
 		end,
@@ -109,6 +110,22 @@ return {
 
 				-- CSS
 				cssls = {},
+
+				-- Emmet Language Server (VS Code style abbreviations like ! or div.box)
+				emmet_language_server = {
+					filetypes = {
+						"css",
+						"eruby",
+						"html",
+						"javascript",
+						"javascriptreact",
+						"less",
+						"sass",
+						"scss",
+						"pug",
+						"typescriptreact",
+					},
+				},
 			}
 
 			-- ── Enable all configured servers ────────────────────
