@@ -1,35 +1,37 @@
 return {
-  -- Treesitter syntax parsing and highlighting
+  -- Treesitter syntax parsing and queries (main branch for Neovim 0.12+)
   {
     "nvim-treesitter/nvim-treesitter",
-    branch = "master",
+    branch = "main",
+    lazy = false,
     build = ":TSUpdate",
-    cmd = { "TSUpdate", "TSInstall", "TSInstallSync", "TSUninstall", "TSUpdateSync" },
-    event = { "BufReadPost", "BufNewFile" },
     config = function()
-      local ok, configs = pcall(require, "nvim-treesitter.configs")
-      if not ok then
-        return
-      end
+      local ts = require("nvim-treesitter")
+      ts.setup({
+        install_dir = vim.fn.stdpath("data") .. "/site",
+      })
 
-      configs.setup({
-        ensure_installed = {
-          "lua",
-          "javascript",
-          "typescript",
-          "tsx",
-          "html",
-          "css",
-          "json",
-          "vim",
-          "vimdoc",
-          "markdown",
-          "markdown_inline",
-          "bash",
-        },
-        auto_install = true,
-        highlight = { enable = true },
-        indent = { enable = true },
+      ts.install({
+        "lua",
+        "javascript",
+        "typescript",
+        "tsx",
+        "html",
+        "css",
+        "json",
+        "vim",
+        "vimdoc",
+        "markdown",
+        "markdown_inline",
+        "bash",
+      })
+
+      vim.api.nvim_create_autocmd("FileType", {
+        callback = function(ev)
+          if pcall(vim.treesitter.start, ev.buf) then
+            vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
       })
     end,
   },
