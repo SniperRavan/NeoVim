@@ -1,1199 +1,595 @@
-# NEOVIM — Complete Neovim Guide
+# Complete Neovim Guide
 
-> This guide covers **your exact configuration** from first launch to advanced workflows.
-> Every command listed here works in this setup. Nothing is generic.
+> This guide documents this exact configuration from first launch to advanced web development workflows.
+> Every keybinding, plugin, and command listed here works directly in this setup.
 
 ---
 
 ## Table of Contents
 
 1. [What is Neovim?](#1-what-is-neovim)
-2. [Your Setup at a Glance](#2-your-setup-at-a-glance)
-3. [Installation](#3-installation)
-4. [First Launch — What Happens](#4-first-launch--what-happens)
-5. [The Four Modes](#5-the-four-modes)
-6. [Moving Around](#6-moving-around)
-7. [Editing Text](#7-editing-text)
-8. [Saving and Closing](#8-saving-and-closing)
-9. [The File Explorer (Snacks)](#9-the-file-explorer-snacks)
-10. [Opening and Switching Files](#10-opening-and-switching-files)
-11. [Searching (Fuzzy Finder)](#11-searching-fuzzy-finder)
-12. [The Integrated Terminal](#12-the-integrated-terminal-vs-code-style-bottom-panel)
-13. [Language Servers (LSP)](#13-language-servers-lsp)
-14. [Autocomplete (Blink.cmp)](#14-autocomplete-blinkcmp)
-15. [Formatting on Save (Conform)](#15-formatting-on-save-conform)
-16. [Mason — Installing Tools](#16-mason--installing-tools)
-17. [Git Integration](#17-git-integration)
-18. [AI Features (Copilot + Chat)](#18-ai-features-copilot--chat)
-19. [Web Dev Tools](#19-web-dev-tools)
-20. [Complete Keymap Reference](#20-complete-keymap-reference)
-21. [Plugin Manager (Lazy.nvim)](#21-plugin-manager-lazynvim)
-22. [Configuration File Structure](#22-configuration-file-structure)
-23. [How to Add a Plugin](#23-how-to-add-a-plugin)
-24. [How to Add a New LSP](#24-how-to-add-a-new-lsp)
-25. [Troubleshooting](#25-troubleshooting)
+2. [Beginners: Key Notation, Modes, and `<leader>` Explained](#2-beginners-key-notation-modes-and-leader-explained)
+3. [Your Setup at a Glance](#3-your-setup-at-a-glance)
+4. [Installation & Requirements](#4-installation--requirements)
+5. [First Launch & Startup Flow](#5-first-launch--startup-flow)
+6. [The Core Modes](#6-the-core-modes)
+7. [Moving Around](#7-moving-around)
+8. [Editing & Manipulating Text](#8-editing--manipulating-text)
+9. [Saving, Closing, and Sessions](#9-saving-closing-and-sessions)
+10. [The File Explorer (Snacks) & Oil](#10-the-file-explorer-snacks--oil)
+11. [Search, Fuzzy Finder, and Grug-Far](#11-search-fuzzy-finder-and-grug-far)
+12. [Split Windows & Buffer Tabs](#12-split-windows--buffer-tabs)
+13. [The Integrated Terminal](#13-the-integrated-terminal)
+14. [Language Servers (LSP) & Emmet](#14-language-servers-lsp--emmet)
+15. [Autocomplete (Blink.cmp) & Snippets](#15-autocomplete-blinkcmp--snippets)
+16. [Formatting (Conform) & Ghost Auto-Save](#16-formatting-conform--ghost-auto-save)
+17. [Mason — Package Manager for Tooling](#17-mason--package-manager-for-tooling)
+18. [Git Integration](#18-git-integration)
+19. [AI Features (Copilot & CopilotChat)](#19-ai-features-copilot--copilotchat)
+20. [Web Dev Tools (Live Server, Markdown Preview, Breadcrumbs, Swatches)](#20-web-dev-tools)
+21. [Performance & Disabled Built-in Plugins](#21-performance--disabled-built-in-plugins)
+22. [Complete Keymap Reference](#22-complete-keymap-reference)
+23. [Plugin Manager (Lazy.nvim)](#23-plugin-manager-lazynvim)
+24. [Configuration File Structure](#24-configuration-file-structure)
+25. [Troubleshooting & Health Checks](#25-troubleshooting--health-checks)
 26. [Vim Motions Cheat Sheet](#26-vim-motions-cheat-sheet)
 
 ---
 
 ## 1. What is Neovim?
 
-Neovim is a text editor that runs inside your terminal. Unlike VS Code or Sublime Text, you control it entirely with the keyboard — no mouse required (though it works too).
+Neovim is an extensible, terminal-based modal text editor. Unlike graphical editors (such as VS Code or Sublime Text), you navigate and edit code using modal keyboard sequences.
 
-The learning curve is steep for the first week, but once it clicks, you edit code faster than any GUI editor.
-
-**Your version:** NVIM v0.12.2  
-**Your config name:** NEOVIM  
-**Your theme:** Catppuccin Mocha (transparent background, glass cyberpunk look)
+- **Current Neovim Version:** NVIM v0.12+ (0.11+ required)
+- **Theme:** Catppuccin Mocha with transparent background
+- **Focus:** Fast, fluid full-stack web development (HTML, CSS, JS, TS, React)
 
 ---
 
-## 2. Your Setup at a Glance
+## 2. Beginners: Key Notation, Modes, and `<leader>` Explained
 
-| What | Plugin/Tool | How to use |
-|------|-------------|-----------|
-| Plugin manager | lazy.nvim | `:Lazy` |
-| Dashboard | alpha-nvim | Opens automatically |
-| File explorer | snacks.nvim explorer | `Space e` |
-| Fuzzy finder | snacks.nvim picker | `Space f f` |
-| Autocomplete | blink.cmp | Appears as you type |
-| LSP (smart code) | nvim-lspconfig + mason | Automatic |
-| Formatter | conform.nvim | Runs on every save |
-| Commenting | Comment.nvim | `Ctrl + /` (multi-line or single-line) |
-| Terminal | toggleterm.nvim | `Space t` or `Ctrl + \`` |
-| Git indicators | gitsigns.nvim | Visible in gutter |
-| AI suggestions | copilot.lua | Appears as you type |
-| AI chat | CopilotChat.nvim | `Space c c` |
-| Colorscheme | catppuccin-mocha | Active always |
-| Notifications | snacks.nvim notifier | Appears top-right |
+If you have never used Vim or Neovim before, key combinations like `<leader>ff` or `map("n", "<C-s>")` can look confusing. Here is exactly what they mean:
+
+### What is the Leader Key (`<leader>`)?
+In Vim and Neovim, the **Leader key** is a custom prefix key. It lets you create custom shortcuts without clashing with Vim's default movement letters.
+- In this configuration, **`<leader>` is set to the Spacebar (` `)**.
+- When this guide says `<leader>ff` or `Space f f`:
+  1. Press and release the `Spacebar`.
+  2. Press `f`.
+  3. Press `f`.
+- You do **not** need to hold Space down while pressing the next key.
+
+### Key Notation Cheat Sheet
+| Symbol in Config / Guide | What key to physically press | Example |
+|---|---|---|
+| `<leader>` | **Spacebar** | `<leader>e` = `Space` then `e` |
+| `<C-...>` | **Ctrl** key | `<C-s>` = `Ctrl + S`, `<C-n>` = `Ctrl + N`, `<C-/>` = `Ctrl + /` |
+| `<S-...>` | **Shift** key | `<S-h>` = `Shift + H` (capital `H`), `<S-F12>` = `Shift + F12` |
+| `<A-...>` or `<M-...>` | **Alt** (Meta) key | `<A-j>` = `Alt + J` or `Alt + Down` |
+| `<CR>` | **Enter / Return** (`Carriage Return`) | `:w<CR>` = type `:w` and hit Enter |
+| `<Esc>` | **Escape** key | Exits current mode back to Normal mode |
+| `<Tab>` / `<S-Tab>` | **Tab** / **Shift + Tab** | Next / previous field or suggestion |
+| `<BS>` | **Backspace** key | Delete one character to the left |
+| `<cmd>...<CR>` | Run an internal command silently without typing on the command line |
+
+### What do Mode Letters Mean? (`"n"`, `"i"`, `"v"`, `"x"`, `"t"`, `"c"`)
+Vim uses distinct modes. When key mappings are defined in Lua (e.g. `vim.keymap.set("n", ...)`), the first argument specifies which mode the key works in:
+- **`"n"` = Normal Mode:** The default mode. Keys perform navigation, deletion, yanking, or trigger commands. Typing characters here does **not** insert text into the file.
+- **`"i"` = Insert Mode:** Regular text-typing mode (like Notepad or VS Code). Press `i` to enter, press `Escape` to leave.
+- **`"v"` or `"x"` = Visual Mode:** Text selection mode. Allows you to highlight characters, words, or lines.
+- **`"t"` = Terminal Mode:** Active shell terminal inside Neovim.
+- **`"c"` = Command Mode:** When you type `:` at the bottom of the screen to run an Ex command.
+- **`map({ "n", "i", "x" }, "<C-s>", ...)`:** This means `Ctrl + S` will save your file whether you are currently in Normal mode, typing in Insert mode, or highlighting in Visual mode.
 
 ---
 
-## 3. Installation
+## 3. Your Setup at a Glance
 
-### Step 1 — Back up any existing Neovim config
+| Component | Plugin / Engine | Default Trigger |
+|---|---|---|
+| Plugin Manager | `lazy.nvim` | `:Lazy` |
+| Dashboard | `alpha-nvim` | Automatic on startup |
+| File Explorer | `snacks.nvim` explorer | `<leader>e` |
+| Alternate File Browser | `oil.nvim` | `-` or `<leader>o` |
+| Fuzzy Finder & Grep | `snacks.nvim` picker | `<leader>ff` / `<leader>fg` |
+| Search & Replace | `grug-far.nvim` | `<leader>sr` |
+| Autocomplete | `blink.cmp` | Automatic as you type |
+| Snippets | `LuaSnip` + `friendly-snippets` | `Tab` / `Shift-Tab` |
+| Language Servers | `nvim-lspconfig` + `mason` | Automatic on code files |
+| Diagnostics & Inline Errors | `tiny-inline-diagnostic` | Virtual inline text |
+| Problems Panel | `trouble.nvim` | `<leader>dt` or `<leader>xx` |
+| Auto-Formatter | `conform.nvim` | Automatic on save or `<leader>cf` |
+| Auto Brackets & Quotes | `mini.pairs` | Automatic on `(`, `[`, `{`, `"`, `'` |
+| Move Lines | `mini.move` | `Alt + Up / Down / Left / Right` |
+| Auto-close & Rename Tags | `nvim-ts-autotag` | Automatic in HTML/JSX/TSX |
+| Color Swatches | `nvim-highlight-colors` | Automatic inline swatches |
+| Sticky Scroll | `nvim-treesitter-context` | Pinned function/class headers |
+| Breadcrumbs | `dropbar.nvim` | Interactive path/symbol top bar |
+| Session Restore | `persistence.nvim` | `<leader>qs` or dashboard `s` button |
+| Commenting | `Comment.nvim` | `Ctrl + /` (line) or `<leader>/` (block) |
+| Multi-Cursor | `vim-visual-multi` | `Ctrl + n` |
+| Bottom Terminal | `toggleterm.nvim` | `<leader>t` or `Ctrl + \`` |
+| Git Indicators | `gitsigns.nvim` + `git-blame.nvim` | Sign column + inline blame |
+| AI Coding | GitHub Copilot + CopilotChat | `Ctrl + l` accept, `<leader>cc` chat |
 
+---
+
+## 4. Installation & Requirements
+
+### System Requirements
+1. **Neovim 0.11+ or 0.12+** is required.
+   > **Debian / Ubuntu users:** Run `apt policy neovim`. If the package version is `0.10.x` or older, do not use the distro `apt` package. Download the official release AppImage or tarball from [Neovim Releases](https://github.com/neovim/neovim/releases/latest).
+2. **Node.js 20+ or 22+** (required for language servers, GitHub Copilot, and Markdown preview).
+3. **JetBrainsMono Nerd Font** (or any modern Nerd Font) set in your terminal emulator.
+
+### 1. Back up existing configuration
 ```bash
 mv ~/.config/nvim ~/.config/nvim.backup
 ```
 
-### Step 2 — Clone this config
-
+### 2. Clone this repository
 ```bash
-git clone https://github.com/yourusername/NEOVIM.git ~/.config/nvim
+git clone https://github.com/SniperRavan/Neovim.git ~/.config/nvim
 ```
 
-### Step 3 — Install system dependencies (Debian 13)
-
+### 3. Install system dependencies
 ```bash
-sudo apt update
-
-sudo apt install -y \
-  neovim git ripgrep fd-find nodejs npm \
+sudo apt update && sudo apt install -y \
+  git ripgrep fd-find nodejs npm \
   python3 gcc g++ clang curl wget unzip xclip
 ```
+> On Wayland desktops, replace `xclip` with `wl-clipboard`.
 
-What each tool does:
-
-| Tool | Why needed |
-|------|-----------|
-| `ripgrep` | Powers the live grep search (`Space f g`) |
-| `fd-find` | Powers the file finder (`Space f f`) |
-| `nodejs` + `npm` | Required for LSP servers, Copilot, Markdown Preview |
-| `gcc` / `clang` | Compiles some plugins (Treesitter parsers) |
-| `xclip` | Syncs clipboard between Neovim and your desktop (X11) |
-
-> **Wayland users:** Replace `xclip` with `wl-clipboard`
-
-### Step 4 — Install a Nerd Font
-
-Icons in the explorer and statusline require a Nerd Font.
-
-Download **JetBrainsMono Nerd Font** from https://www.nerdfonts.com/
-
-Then in Alacritty config (`~/.config/alacritty/alacritty.toml`):
-
+### 4. Configure Nerd Font
+In your terminal configuration (e.g., Alacritty `~/.config/alacritty/alacritty.toml`):
 ```toml
 [font]
 normal = { family = "JetBrainsMono Nerd Font", style = "Regular" }
 ```
 
-> **This is why the ASCII art looks broken in your screenshots.**
-> The box-drawing characters require the terminal font to be a Nerd Font.
-
-### Step 5 — Launch Neovim
-
+### 5. Launch Neovim
 ```bash
 nvim
 ```
-
-Plugins install automatically on first launch. Wait for them to finish.
-
-### Step 6 — Install formatters
-
+Plugins will synchronize automatically on first run. Once inside, install formatters:
 ```vim
 :MasonInstall prettier stylua
 ```
 
 ---
 
-## 4. First Launch — What Happens
+## 5. First Launch & Startup Flow
 
-When you run `nvim` with no file argument:
-
-1. `init.lua` loads → sets options, keymaps, autocmds
-2. `lazy.nvim` loads all plugins
-3. The **Alpha dashboard** appears full-screen
-4. You see the NEOVIM header + six buttons
-
-**Dashboard buttons** (press the shortcut shown on the right):
-
-| Button | Shortcut | What it does |
-|--------|----------|-------------|
-| Find File | `f f` | Fuzzy search for files in current directory |
-| New File | `f n` | Create a blank new file |
-| Recent Files | `f r` | Files you opened recently |
-| Find Text | `f g` | Search for text inside all files |
-| Config | `f c` | Open your `init.lua` |
-| Quit | `q` | Close Neovim |
+When you run `nvim` without specifying a file:
+1. `init.lua` enables `vim.loader` byte-compilation for near-instant boot.
+2. `core/options.lua`, `core/keymaps.lua`, and `core/autocmds.lua` initialize.
+3. `lazy.nvim` initializes plugins.
+4. The **Alpha Dashboard** displays centered with quick-action buttons:
+   - `f f` → Find project files
+   - `f n` → Create blank new file
+   - `f r` → Open recent files
+   - `f g` → Search text across project
+   - `s`   → Restore previous session
+   - `f c` → Open Neovim configuration
+   - `q`   → Quit Neovim
 
 ---
 
-## 5. The Four Modes
+## 6. The Core Modes
 
-Neovim has modes. Understanding them is the single most important concept.
+### Normal Mode (`NORMAL`)
+The standard control mode. Press `Escape` from anywhere to return here.
+- Movement keys: `h`, `j`, `k`, `l`, `w`, `b`, `0`, `$`.
+- Actions: `d` (delete), `y` (copy), `p` (paste), `u` (undo).
 
-### NORMAL mode
+### Insert Mode (`INSERT`)
+Typing mode.
+- Press `i` to insert before cursor.
+- Press `a` to insert after cursor.
+- Press `o` to open a new line below and start typing.
+- Press `Escape` to return to Normal mode.
 
-**What it is:** The default mode. Keys perform commands, not type text.  
-**How to get here:** Press `Escape` from any other mode.  
-**Status bar shows:** `NORMAL`
-
-This is where you spend most of your time: moving around, copying, deleting, searching.
-
-### INSERT mode
-
-**What it is:** Type text like a normal editor.  
-**How to enter:** Press `i` (insert before cursor), `a` (after cursor), `o` (new line below).  
-**How to exit:** Press `Escape`.  
-**Status bar shows:** `INSERT`
-
-### VISUAL mode (Selecting text without a mouse)
-
-**What it is:** Select text with the keyboard — no mouse needed!  
-**How to get here:** Press `v`, `V`, or `Shift + Arrow keys`.  
-**How to exit / cancel selection:** Press `Escape`.  
-**Status bar shows:** `VISUAL` (or `V-LINE` / `V-BLOCK`)
-
-#### 1. Shift + Arrow keys (VS Code Muscle Memory)
-* Hold **`Shift` + `Up / Down / Left / Right`** from NORMAL or INSERT mode to start selecting text just like in VS Code.
-
-#### 2. The Three Visual Modes
-* **`v` (Character selection):** Place cursor at start, press `v`, then move with `h`/`j`/`k`/`l` (or arrow keys, `w`, `b`, `$`).
-* **`V` (Shift + v — Line selection):** Selects entire lines. Press `V`, then press `j` to select lines downwards or `k` upwards.
-* **`Ctrl + v` (Block selection):** Selects a rectangular column across multiple lines (great for multi-line edits).
-
-#### 3. "Superhuman" Speed: Text Objects (Select instantly without moving cursor!)
-You don't need to manually drag a selection:
-* **`viw`** → Select inner word (the word under cursor)
-* **`vaw`** → Select word + surrounding whitespace
-* **`vi"`** → Select everything inside quotes `"..."`
-* **`va"`** → Select quotes + inside content
-* **`vi(`** or **`vib`** → Select everything inside parentheses `(...)`
-* **`vi{`** or **`viB`** → Select everything inside curly braces `{...}` (function / CSS body)
-* **`vip`** → Select entire paragraph / code block
-* **`ggVG`** → Select the ENTIRE file (`gg` = top, `V` = line visual, `G` = bottom)
-
-#### What to do once text is selected
-* **`y`** → Copy (yank) to system clipboard
-* **`d`** → Delete (cut)
-* **`c`** → Change (delete and immediately start typing)
-* **`Ctrl + /`** → Comment / uncomment selection
-* **`>`** or **`<`** → Indent / outdent selection
-* **`Space c c`** → Chat about selection with Copilot AI
-* **`Escape`** → Cancel selection
-
-### COMMAND mode
-
-**What it is:** Type commands after `:`.  
-**How to enter:** Press `:` from NORMAL mode.  
-**How to exit:** Press `Escape` or `Enter` (to run the command).
-
-Example: `:w` saves, `:q` quits.
+### Visual Mode (`VISUAL`, `V-LINE`, `V-BLOCK`)
+Selection mode.
+- `v`: Character selection.
+- `V`: Full line selection.
+- `Ctrl + v`: Rectangular column block selection.
+- **Shift + Arrow keys:** Works just like VS Code from Normal, Insert, or Visual mode to extend selection.
 
 ---
 
-## 6. Moving Around
+## 7. Moving Around
 
-All movement is done in **NORMAL mode**.
+All navigation is done in **Normal mode**:
 
-### Basic cursor movement
-
-| Key | Move |
-|-----|------|
-| `h` | Left one character |
-| `j` | Down one line |
-| `k` | Up one line |
-| `l` | Right one character |
-
-### Word jumping
-
-| Key | Move |
-|-----|------|
-| `w` | Jump forward to the start of the next word |
-| `b` | Jump backward to the start of the previous word |
-| `e` | Jump to the end of the current/next word |
-
-### Line navigation
-
-| Key | Move |
-|-----|------|
-| `0` | Go to the very beginning of the line |
-| `^` | Go to the first non-space character on the line |
-| `$` | Go to the end of the line |
-
-### File navigation
-
-| Key | Move |
-|-----|------|
-| `gg` | Go to the first line of the file |
-| `G` | Go to the last line of the file |
-| `50G` | Go to line 50 |
-| `Ctrl-d` | Scroll down half a page (smooth, thanks to Neoscroll) |
-| `Ctrl-u` | Scroll up half a page |
-| `Ctrl-f` | Scroll down a full page |
-| `Ctrl-b` | Scroll up a full page |
-
-### Search
-
+### Basic & Word Movement
 | Key | Action |
-|-----|--------|
-| `/searchterm` then `Enter` | Search forward for "searchterm" |
-| `?searchterm` then `Enter` | Search backward |
-| `n` | Jump to next match |
-| `N` | Jump to previous match |
-| `*` | Search for the word under the cursor |
+|---|---|
+| `h` / `j` / `k` / `l` | Left / Down / Up / Right |
+| `w` | Jump forward to start of next word |
+| `b` | Jump backward to start of previous word |
+| `e` | Jump forward to end of current/next word |
+| `0` | Jump to start of line |
+| `^` | Jump to first non-whitespace character |
+| `$` | Jump to end of line |
+
+### Page & File Movement
+| Key | Action |
+|---|---|
+| `gg` | Jump to the very first line of the file |
+| `G` | Jump to the last line of the file |
+| `Ctrl + d` | Smooth scroll half-page down (Neoscroll) |
+| `Ctrl + u` | Smooth scroll half-page up (Neoscroll) |
+| `Ctrl + f` | Page down |
+| `Ctrl + b` | Page up |
 
 ---
 
-## 7. Editing Text
+## 8. Editing & Manipulating Text
 
-### Entering insert mode
-
-| Key | What it does |
-|-----|-------------|
-| `i` | Insert before the cursor |
-| `a` | Insert after the cursor |
-| `I` | Insert at the start of the line |
-| `A` | Insert at the end of the line |
-| `o` | Open a new line below and start inserting |
-| `O` | Open a new line above and start inserting |
-
-### Deleting
-
-| Key | What it deletes |
-|-----|----------------|
-| `x` | The character under the cursor |
-| `dd` | The entire current line (notifies you) |
-| `dw` | From cursor to end of word |
-| `d$` | From cursor to end of line |
-| `diw` | The word under the cursor (without surrounding spaces) |
-| `daw` | The word under the cursor (including surrounding spaces) |
-| `di"` | Everything inside the nearest `"..."` |
-| `di(` | Everything inside the nearest `(...)` |
-
-### Changing (delete then immediately enter INSERT mode)
-
-| Key | What it changes |
-|-----|----------------|
-| `cw` | From cursor to end of word |
-| `ciw` | The entire word under cursor |
-| `ci"` | Everything inside `"..."` |
-| `ci(` | Everything inside `(...)` |
-| `cc` | The entire current line |
-| `C` | From cursor to end of line |
-
-### Copying (yanking) and pasting
-
+### Deleting & Changing
 | Key | Action |
-|-----|--------|
-| `yy` | Copy (yank) the current line |
-| `yw` | Yank from cursor to end of word |
-| `y$` | Yank from cursor to end of line |
-| `yiw` | Yank the word under cursor |
-| `p` | Paste after the cursor (notifies you) |
-| `P` | Paste before the cursor |
+|---|---|
+| `x` | Delete character under cursor |
+| `dd` | Delete entire line |
+| `diw` | Delete inside current word |
+| `ciw` | Change inside word (deletes word and enters Insert mode) |
+| `ci"` | Change inside double quotes `""` |
+| `ci(` | Change inside parentheses `()` |
+| `ci{` | Change inside curly braces `{}` |
 
-> Your clipboard is synced with the system clipboard (`vim.opt.clipboard = "unnamedplus"`).
-> So `yy` in Neovim → `Ctrl-v` works in other apps, and vice versa.
-
-### Undo and redo
-
+### Copying (Yanking) & Pasting
 | Key | Action |
-|-----|--------|
-| `u` | Undo the last change |
-| `Ctrl-r` | Redo (undo the undo) |
+|---|---|
+| `yy` | Copy current line |
+| `yiw` | Copy current word |
+| `p` | Paste after cursor |
+| `P` | Paste before cursor |
+- Neovim is configured with `opt.clipboard = "unnamedplus"`, meaning anything copied with `yy` or `y` is immediately accessible in other system applications via `Ctrl + V`.
+- `TextYankPost` only notifies and flashes highlight when text is actually yanked with `y` (not on deletes or cuts).
 
-### Indenting
+### Moving Lines (`mini.move`)
+Just like in modern IDEs, you can effortlessly slide lines up and down:
+- In Normal or Visual mode, press **`Alt + Up`** or **`Alt + Down`** to move the current line or selection.
+- Press **`Alt + Left`** or **`Alt + Right`** to adjust indentation.
 
-| Key | Action |
-|-----|--------|
-| `>>` | Indent the current line right |
-| `<<` | Indent the current line left |
-| `>` in VISUAL | Indent selected lines right |
-| `<` in VISUAL | Indent selected lines left |
+### Automatic Pairs (`mini.pairs`)
+When you type `(`, `[`, `{`, `"`, or `'`, the closing pair is automatically inserted. Deleting the opening character cleanly removes both.
 
-### Multi-cursor (vim-visual-multi)
+### Multi-Cursor (`vim-visual-multi`)
+1. Place cursor on a variable or word.
+2. Press **`Ctrl + n`** to select it.
+3. Press **`Ctrl + n`** again to find and add cursors to subsequent matches.
+4. Type your changes — all cursors edit simultaneously.
 
-1. Place cursor on a word
-2. Press `Ctrl-n` — it selects the word and adds a cursor
-3. Press `Ctrl-n` again — finds and selects the next occurrence, adds another cursor
-4. Keep pressing `Ctrl-n` to add more
-5. Now type normally — all cursors edit simultaneously
-
-### Commenting (Smart Multi-line / Single-line)
-
-Press **`Ctrl + /`** (or `Ctrl + _` in some terminals) to comment or uncomment code:
-- **Normal mode:** Toggles comment on the current line.
-- **Visual mode:** Select multiple lines and press `Ctrl + /` to comment the block.
-- **Smart multi-line behavior:**
-  - In languages with block comments (JS, TS, C, C++, Rust, Go, HTML, CSS, Lua, Java, etc.), it uses block syntax (e.g., `/* ... */`, `<!-- ... -->`, `--[[ ... ]]`).
-  - In languages with single-line comments only (Python, Bash, YAML, TOML, etc.), it automatically uses single-line syntax (e.g., `# ...`).
+### Commenting (`Comment.nvim`)
+- Press **`Ctrl + /`** (or `Ctrl + _`) in Normal mode to toggle line comment on the current line.
+- In Visual mode, press **`Ctrl + /`** to comment the selected block.
+- Press **`<leader>/`** (`Space /`) to toggle block comments (`/* ... */`).
+- Fully context-aware: JSX, TSX, HTML `<script>`, and `<style>` tags automatically receive the correct comment syntax.
 
 ---
 
-## 8. Saving and Closing
+## 9. Saving, Closing, and Sessions
 
 ### Saving
+- **`Ctrl + s`**: Saves the file silently from Normal, Insert, or Visual mode.
+- `:w`: Standard Vim save.
 
-| Command | Action |
-|---------|--------|
-| `:w` | Save the current file |
-| `:w filename.txt` | Save as a new file |
-| `Space m p` | Toggle Markdown Preview (also saves) |
+### Safe Quit vs Force Quit
+- **`<leader>q` (`Space q`)**: Runs `:qa`. Safe quit that prompts you to save changes if unsaved buffers exist.
+- **`<leader>Q` (`Space Q`)**: Runs `:qa!`. Force-quits Neovim immediately, discarding unsaved changes.
 
-> Web files (`.html`, `.css`, `.js`) **auto-save as you type** — you never need `:w` for them.
-> This keeps Live Server updated without any action from you.
-
-### Closing buffers (file tabs)
-
-| Key / Command | Action |
-|--------------|--------|
-| `Space x` | Close the current buffer (tab). If it's the last one, Alpha dashboard appears. |
-| `:bdelete` | Same as above |
-| `:bd!` | Force-close without saving |
-
-> **Important:** Closing a buffer is NOT the same as closing the window.
-> `Space x` closes the file. The window stays open and shows the dashboard.
-
-### Closing Neovim
-
-| Command | Action |
-|---------|--------|
-| `Space q` | Force quit ALL windows (even unsaved changes) |
-| `:qa` | Quit all windows (fails if unsaved changes exist) |
-| `:qa!` | Force quit all windows |
-| `:wqa` | Save all + quit |
-
-### Closing a split window
-
-| Key | Action |
-|-----|--------|
-| `:q` | Close the currently focused window/split |
-| `Ctrl-w c` | Close the current split |
+### Session Restore (`persistence.nvim`)
+- **`<leader>qs`**: Restores the session saved for the current directory.
+- **`<leader>ql`**: Restores the last active session.
+- **`<leader>qd`**: Disables session saving for the current session.
+- You can also hit `s` directly on the Alpha startup dashboard to restore your session.
 
 ---
 
-## 9. The File Explorer (Snacks)
+## 10. The File Explorer (Snacks) & Oil
 
-The explorer is the file tree on the left side of the screen.
+### Snacks Explorer Sidebar
+- Toggle the sidebar with **`<leader>e`** (`Space e`).
+- Inside the sidebar:
+  - `j` / `k`: Move up and down
+  - `Enter`: Open file or toggle folder
+  - `.`: Toggle hidden dotfiles (`.env`, `.gitignore`)
+  - `a`: Add new file
+  - `d`: Delete file
+  - `r`: Rename file
+  - `q`: Close explorer
+- Filter configuration automatically excludes `node_modules` and `.git` from cluttering your view while keeping dotfiles visible.
 
-### Opening and closing
-
-Press **`Space e`** to toggle. Here's exactly what happens each time:
-
-| Current state | Press `Space e` | Result |
-|--------------|-----------------|--------|
-| Dashboard fullscreen | → | Explorer opens left, Dashboard stays right |
-| Explorer + Dashboard | → | Explorer closes, Dashboard fullscreen |
-| Explorer + Open file | → | Explorer closes, file stays open fullscreen |
-| No explorer, file open | → | Explorer opens left, file stays right |
-
-### Navigating inside the explorer
-
-Focus the explorer with `Space e`, then:
-
-| Key | Action |
-|-----|--------|
-| `j` / `k` | Move down / up |
-| `Enter` | Open file or expand folder |
-| `l` | Expand folder |
-| `h` | Collapse folder |
-| `.` | Toggle hidden/dotfiles visibility |
-| `a` | Create a new file (type the name, press Enter) |
-| `d` | Delete the selected file |
-| `r` | Rename the selected file |
-| `q` or `Escape` | Close the explorer |
-
-### Oil.nvim (alternative file manager)
-
-Press **`-`** from any buffer to open the PARENT directory as an editable buffer.
-
-This is powerful: you can:
-- Rename files by editing the text on the line
-- Delete files by deleting the line (`dd`)
-- Create files by adding new lines
-- Press `-` again to go up another directory
-- Press `Enter` on a file to open it
-- `:w` to apply your changes
+### Oil.nvim (Buffer-based File Manager)
+Press **`-`** or **`<leader>o`** to open the parent directory as an editable text buffer:
+- Edit file names as plain text.
+- Delete lines (`dd`) to delete files.
+- Create new lines to create new files.
+- Type `:w` to commit your filesystem changes.
 
 ---
 
-## 10. Opening and Switching Files
+## 11. Search, Fuzzy Finder, and Grug-Far
 
-### Opening files
+### Fuzzy Finding (`snacks.picker`)
+- **`<leader>ff`**: Find files in the current project directory (fast, ignores `node_modules`).
+- **`<leader>fg`**: Live grep search across text inside project files.
+- **`<leader>fr`**: Open recently accessed files.
+- **`<leader>fp`**: Command palette (search and execute any Neovim command).
+- **`<leader>fb`**: Switch between active buffers.
+- **`<leader>fs`**: Jump to LSP symbols in the current file.
+- **`<leader>fd`**: Open the diagnostics picker.
+- **`<leader>fw`**: Grep the word currently under the cursor across the project.
+- **`<leader>fk`**: Search all active keymaps.
+- **`<leader>g`**: Global file search across your `$HOME` directory without choking on heavy cache folders.
 
-| Method | How |
-|--------|-----|
-| From explorer | Navigate to file, press `Enter` |
-| Fuzzy find | `Space f f` → type filename → `Enter` |
-| Recent files | `Space f r` → select → `Enter` |
-| Command | `:e path/to/file.js` |
-| Oil | `-` to browse, `Enter` to open |
-
-### Switching between open files (buffers)
-
-| Key | Action |
-|-----|--------|
-| `Shift-L` (or `Ctrl-Tab`) | Go to the next buffer (right in the tab bar) |
-| `Shift-H` (or `Ctrl-Shift-Tab`) | Go to the previous buffer (left in the tab bar) |
-| `Space x` | Close the current buffer |
-
-### Splits (multiple files side by side)
-
-| Command | Action |
-|---------|--------|
-| `:vsplit` or `:vs` | Open current file in a vertical split (side by side) |
-| `:split` or `:sp` | Open current file in a horizontal split (top/bottom) |
-| `:vs filename.js` | Open a specific file in a vertical split |
-| `Space h` | Move focus to the left split |
-| `Space l` | Move focus to the right split |
-| `Space j` | Move focus to the split below |
-| `Space k` | Move focus to the split above |
+### Project-wide Search & Replace (`grug-far.nvim`)
+- Press **`<leader>sr`** to open the Grug-Far interactive search-and-replace split window.
+- Enter your search string, replacement string, and optional file filter. Changes update in real time with visual diffs before you apply them.
 
 ---
 
-## 11. Searching (Fuzzy Finder)
+## 12. Split Windows & Buffer Tabs
 
-All search uses **Snacks Picker** — a fast fuzzy finder.
+### Window Navigation
+Window navigation is organized under the `<leader>w` group (or direct `Ctrl + h/j/k/l`) to prevent key delays:
+- **`<leader>wh`** / **`<C-h>`**: Focus split to the left
+- **`<leader>wj`** / **`<C-j>`**: Focus split below
+- **`<leader>wk`** / **`<C-k>`**: Focus split above
+- **`<leader>wl`** / **`<C-l>`**: Focus split to the right
 
-### Find files by name
-
-Press **`Space f f`**
-
-A floating window appears. Type any part of the filename.
-- Use arrow keys or `j`/`k` to move through results
-- Press `Enter` to open the file
-- Press `Escape` to cancel
-
-### Search text inside files
-
-Press **`Space f g`** (requires `ripgrep` installed)
-
-Type any text you want to find. Results update live as you type.
-- The results show the filename and the matching line
-- `Enter` to jump to that location
-
-### Recent files
-
-Press **`Space f r`**
-
-Shows files you've opened across all previous Neovim sessions.
-
-### Global search (anywhere on your computer)
-
-Press **`Space g`**
-
-Searches for files starting from your home directory (`~`).
-Use this when you can't remember which project a file is in.
+### Buffer Tabs (`bufferline.nvim`)
+Open files appear as styled tabs along the top:
+- **`Shift + l`** (or **`Ctrl + Tab`**, or **`]b`**): Next buffer tab
+- **`Shift + h`** (or **`Ctrl + Shift + Tab`**, or **`[b`**): Previous buffer tab
+- **`<leader>x`**: Closes the current buffer. If it was the last open file, the Alpha dashboard automatically returns.
+- Explorer offset is configured so tabs cleanly start to the right of the sidebar.
+- Tabs display live LSP error and warning indicators.
 
 ---
 
-## 12. The Integrated Terminal (VS Code Style Bottom Panel)
+## 13. The Integrated Terminal
 
-Press **`Space t`** or **`Ctrl + \``** to toggle the terminal panel docked at the bottom of your screen — exactly like VS Code!
-
-The terminal runs your default shell (`$SHELL` — bash, zsh, fish, etc.).
-
-### How it works (Dock, Hide & Terminate)
-
-1. **Open:** Press `Space t` or `Ctrl + \`` from any file to open the bottom terminal panel.
-2. **Hide (Keep Running):**
-   - While typing in the terminal, press **`Ctrl + \``** or **`Ctrl + t`** to immediately hide it.
-   - Or press **`Esc Esc`** (or `Ctrl-\ Ctrl-n`) to enter NORMAL mode, then press `Space t`.
-   - Your background processes (e.g. `npm run dev`), current directory, and shell session stay **alive** in the background.
-3. **Re-open:** Press `Space t` or `Ctrl + \`` anytime to bring it back up exactly where you left off.
-4. **Terminate (Kill session):** Simply type **`exit`** (or press `Ctrl + d`) inside the terminal. The process terminates and the bottom panel closes cleanly.
-
-### Terminal shortcuts
-
-| Key | Mode | Action |
-|-----|------|--------|
-| Type normally | Terminal | Run shell commands |
-| `Ctrl + \`` or `Ctrl + t` | Terminal | Hide terminal panel instantly (process keeps running) |
-| `Esc Esc` (or `Ctrl-\ Ctrl-n`) | Terminal | Switch to NORMAL mode (scroll up/down with `k`/`j`, copy text) |
-| `i` or `a` | Normal (in terminal) | Return to typing in the terminal |
-| `Space t` | Normal | Toggle / Hide bottom terminal panel |
-| `exit` (or `Ctrl-d`) | Shell | Terminate the terminal session and close panel |
-
-### Common workflow
-
-```
-Space t (or Ctrl+`) → open bottom terminal
-npm run dev         → start your dev server
-Ctrl + ` (or Ctrl+t)→ hide terminal (dev server keeps running in background!)
-... edit your code in peace ...
-Space t (or Ctrl+`) → bring terminal back up to view logs
-exit                → terminate server & shell and close terminal window
-```
+ToggleTerm provides a VS Code style bottom terminal panel:
+- Press **`<leader>t`** or **`Ctrl + \``** to open or hide the terminal panel.
+- While inside terminal mode, press **`Ctrl + \``** or **`Ctrl + t`** to immediately hide it. Background jobs (e.g. `npm run dev`) continue running without interruption.
+- Press **`Esc Esc`** to enter Normal mode inside the terminal window to scroll through output or copy logs.
+- Type `exit` to close the shell session.
 
 ---
 
-## 13. Language Servers (LSP)
+## 14. Language Servers (LSP) & Emmet
 
-An LSP (Language Server Protocol) server is a program that understands your programming language. It runs silently in the background.
+Native `vim.lsp.config` manages language servers with full 0.12+ compatibility:
+- `lua_ls`: Lua LSP for configuration editing
+- `ts_ls`: TypeScript & JavaScript language server
+- `html`: HTML language server
+- `cssls`: CSS language server
+- `emmet_language_server`: Emmet abbreviations for HTML, JSX, TSX, CSS
 
-**What it gives you:**
-- Red/yellow underlines on errors and warnings
-- Autocomplete suggestions
-- Jump to definition
-- Rename a variable across the entire project
-- Quick-fix suggestions
+### Emmet Fix & Scoping
+Emmet is specifically configured for markup and template contexts (`html`, `javascriptreact`, `typescriptreact`, `css`, `scss`, etc.) and excluded from plain JS/TS. This ensures typing standard statements like `console.log` never generates phantom `<console.log>` HTML tags.
 
-### Installed LSP servers
-
-| Server | Language | Auto-installed? |
-|--------|----------|----------------|
-| `lua_ls` | Lua | Yes |
-| `ts_ls` | TypeScript + JavaScript | Yes |
-| `html` | HTML | Yes |
-| `cssls` | CSS | Yes |
-| `emmet_language_server` | Emmet (HTML/CSS abbreviations: `!`, `div.box`, etc.) | Yes |
-
-### LSP keymaps (active when a supported file is open)
-
-| Key | Action |
-|-----|--------|
-| `gd` | **Go to definition** — jumps to where the function/variable is defined |
-| `K` | **Hover docs** — shows documentation popup for what's under the cursor |
-| `gr` | **Find references** — shows everywhere this symbol is used |
-| `Space r n` | **Rename** — renames symbol everywhere in the project |
-| `Space c a` | **Code action** — shows available quick-fixes (import missing, fix error, etc.) |
-
-### Diagnostic navigation (errors/warnings)
-
-| Key | Action |
-|-----|--------|
-| `Space d n` | Jump to the NEXT error/warning in the file |
-| `Space d p` | Jump to the PREVIOUS error/warning |
-| `Space d d` | Open a popup showing the full error message for the current line |
-
-### Checking LSP status
-
-```vim
-:LspInfo
-```
-
-Shows which LSP server is attached to the current buffer and if it's running correctly.
+### LSP Keybindings
+| Shortcut | Action |
+|---|---|
+| `gd` or `<F12>` | Jump to definition |
+| `K` | Hover documentation popup |
+| `<S-F12>` or `grr` | Find all references |
+| `<leader>rn` or `<F2>` | Rename symbol project-wide |
+| `<leader>ca` or `<C-.>` | Quick fix / Code action |
+| `<leader>dn` / `<leader>dp` | Next / previous diagnostic error |
+| `<leader>dd` | Open diagnostic floating popup |
+| `<leader>dt` or `<leader>xx` | Toggle Trouble problems panel |
 
 ---
 
-## 14. Autocomplete (Blink.cmp)
+## 15. Autocomplete (Blink.cmp) & Snippets
 
-As you type, a popup menu appears with suggestions. This works automatically — no trigger key needed.
-
-### Completion sources
-
-The popup combines suggestions from:
-- **lsp** — functions, variables, and types from the language server
-- **path** — file paths (when you type `./` or `/`)
-- **snippets** — code templates
-- **buffer** — words already in the current file
-
-### Completion keymaps
-
-| Key | Action |
-|-----|--------|
-| `Tab` | Select the next suggestion |
-| `Shift-Tab` | Select the previous suggestion |
-| `Enter` | Accept the selected suggestion |
-| `Escape` | Close the completion menu |
-
-### Signature help
-
-When you type inside function arguments, a popup shows the function's expected parameters. This is automatic.
-
-Example: typing `console.log(` shows that `log` expects `...data: any[]`.
+As you type, Blink.cmp renders a floating completion popup:
+- Sources: LSP suggestions, file paths (`./`), LuaSnip templates, and buffer words.
+- **`Tab`**: Forward through snippet placeholders or select next suggestion.
+- **`Shift + Tab`**: Backward through snippet placeholders or select previous suggestion.
+- **`Enter`**: Accept suggestion.
+- Documentation preview windows appear automatically after a 200ms delay.
 
 ---
 
-## 15. Formatting on Save (Conform)
+## 16. Formatting (Conform) & Ghost Auto-Save
 
-When you press `:w` to save, Conform automatically formats your code.
+### Ghost Auto-Save
+When working on `.html`, `.css`, `.js`, `.jsx`, `.ts`, or `.tsx` files:
+- Leaving insert mode or changing text in normal mode silently writes changes using `noautocmd write`.
+- **Zero formatting thrashing:** This ensures file changes reach the filesystem for live reloaders without triggering Prettier or re-flowing text while you type.
 
-| File type | Formatter | Install with |
-|-----------|-----------|-------------|
-| JavaScript | prettier | `:MasonInstall prettier` |
-| TypeScript | prettier | `:MasonInstall prettier` |
-| HTML | prettier | `:MasonInstall prettier` |
-| CSS | prettier | `:MasonInstall prettier` |
-| JSON | prettier | `:MasonInstall prettier` |
-| Lua | stylua | `:MasonInstall stylua` |
-
-> **Nothing happens on save?** Run `:MasonInstall prettier stylua` — the formatters need to be installed first.
+### Format on Save
+- Manual saves (`Ctrl + s` or `:w`) and explicit formatting (**`<leader>cf`**) trigger Conform.
+- Formats JavaScript, TypeScript, HTML, CSS, and JSON using Prettier, and Lua using Stylua.
+- Configured with a generous 2000ms timeout to avoid timing out on cold starts.
 
 ---
 
-## 16. Mason — Installing Tools
+## 17. Mason — Package Manager for Tooling
 
-Mason installs LSP servers, formatters, and linters.
-
-### Open Mason UI
-
-```vim
-:Mason
-```
-
-A window appears showing all available and installed tools. Use `j`/`k` to navigate, `i` to install, `X` to uninstall.
-
-### Install specific tools
-
-```vim
-:MasonInstall prettier
-:MasonInstall stylua
-:MasonInstall lua-language-server
-:MasonInstall typescript-language-server
-```
-
-### Update all installed tools
-
-```vim
-:MasonUpdate
-```
-
-### Common Mason commands
-
-| Command | Action |
-|---------|--------|
-| `:Mason` | Open the Mason UI |
-| `:MasonInstall <name>` | Install a specific tool |
-| `:MasonUninstall <name>` | Remove a tool |
-| `:MasonUpdate` | Update all installed tools |
-| `:MasonLog` | View Mason's log for debugging |
+Mason manages external language servers, formatters, and linters:
+- **`:Mason`**: Opens the interactive tool manager.
+- **`:MasonInstall prettier stylua`**: Installs formatters.
+- **`:MasonUpdate`**: Updates the Mason package registry index.
 
 ---
 
-## 17. Git Integration
+## 18. Git Integration
 
-### Gitsigns — change indicators
-
-When you're inside a git repository, the sign column (left of line numbers) shows:
-
-| Symbol | Meaning |
-|--------|---------|
-| `│` (bar, usually green) | This line was modified |
-| `+` (green) | This line was added |
-| `_` (red) | A line above this was deleted |
-
-These update in real time as you edit.
-
-### Git blame
-
-At the end of each line, you'll see: `You • 2 hours ago • Fixed the login bug`
-
-This shows who last modified that line, when, and what commit message they wrote.
-
-Toggle it with:
-```vim
-:GitBlameToggle
-```
-
-### Git workflow (using the terminal)
-
-```
-Space t                    → open floating terminal
-git status                 → see what changed
-git add .                  → stage all changes
-git commit -m "your msg"   → commit
-git push                   → push to remote
-Ctrl-\ Ctrl-n              → back to normal mode
-Space t                    → hide terminal
-```
+- **Gitsigns:** Colored indicators in the sign column showing modified (`│`), added (`+`), and deleted (`_`) lines.
+- **Git-Blame:** Displays the author, date, and commit message inline at the end of the current line. Toggle with `:GitBlameToggle`.
 
 ---
 
-## 18. AI Features (Copilot + Chat)
+## 19. AI Features (Copilot & CopilotChat)
 
-### Copilot inline suggestions
-
-As you type code, Copilot shows grey ghost-text suggestions.
-
-| Key | Action |
-|-----|--------|
-| `Ctrl-l` | Accept the full Copilot suggestion |
-| `Alt-]` | Next suggestion (cycle through alternatives) |
-| `Alt-[` | Previous suggestion |
-
-### First-time setup
-
-```vim
-:Copilot auth
-```
-
-Follow the instructions — it opens a browser to authenticate with GitHub.
-
-### CopilotChat
-
-| Key | Action |
-|-----|--------|
-| `Space c c` | Open/close the Copilot Chat window |
-| `Space c e` | Ask Copilot to explain the selected code |
-
-**How to use:**
-
-1. Open a file with code
-2. Press `Space c c` → a floating chat window appears
-3. Type your question and press `Enter`
-4. Copilot reads your file for context and responds
-
-**With selected code:**
-
-1. In VISUAL mode, select some code (`V` for line select)
-2. Press `Space c c`
-3. Ask a question — Copilot Chat knows what you selected
-
-**Example questions:**
-- "Explain what this function does"
-- "Refactor this to use async/await"
-- "Write unit tests for this code"
-- "What's wrong with this code?"
+- **Inline Suggestions:** As you type, Copilot displays ghost suggestions. Press **`Ctrl + l`** to accept.
+- **CopilotChat (`<leader>cc`):** Opens a floating conversational AI panel.
+- **Explain Selection (`<leader>ce`):** Highlights code and prompts Copilot to explain its logic.
+- Initial setup: Run `:Copilot auth`.
 
 ---
 
-## 19. Web Dev Tools
+## 20. Web Dev Tools
 
-### Live Server
-
-Starts a local web server that auto-reloads when files change.
-
-```
-Space l s     → Start Live Server
-Space l x     → Stop Live Server
-```
-
-A browser tab opens pointing to your HTML file. Every time you save, the page reloads automatically.
-
-> Requires: `npm install -g live-server`
-
-**Your HTML/CSS/JS files auto-save as you type**, so the browser updates almost in real time without you pressing `:w`.
-
-### Markdown Preview
-
-```
-Space m p     → Toggle Markdown Preview
-```
-
-Opens your `.md` file in the browser with live preview. The browser updates as you edit.
-
-> Requires Node.js (should already be installed).
+- **Live Server:** Press **`<leader>ls`** to launch a browser live-server on port 5500. Press **`<leader>lx`** to stop it.
+- **Markdown Preview:** Press **`<leader>mp`** to open a real-time rendering browser preview of markdown documents.
+- **Breadcrumbs (`dropbar.nvim`):** Displays a clickable, interactive path and code hierarchy bar at the top of the editor.
+- **Color Swatches (`nvim-highlight-colors`):** Displays background color highlights on hex codes, rgb values, and Tailwind CSS color classes.
+- **Tag Renaming (`nvim-ts-autotag`):** Editing an opening HTML/JSX tag automatically updates its matching closing tag.
 
 ---
 
-## 20. Complete Keymap Reference
+## 21. Performance & Disabled Built-in Plugins
 
-`Space` = Leader key
+This setup optimizes startup time via `vim.loader.enable()` and by disabling legacy built-in Vim plugins that are unnecessary for modern development.
 
-### Explorer & Navigation
-
-| Key | Action |
-|-----|--------|
-| `Space e` | Toggle file explorer sidebar |
-| `-` | Open parent directory (Oil) |
-| `Space h` | Focus split: left |
-| `Space l` | Focus split: right |
-| `Space j` | Focus split: down |
-| `Space k` | Focus split: up |
-
-### Search & Files
-
-| Key | Action |
-|-----|--------|
-| `Space f f` | Find files in project |
-| `Space f g` | Search text in files (live grep) |
-| `Space f r` | Recent files |
-| `Space g` | Global file search (home directory) |
-| `Shift-L` (or `Ctrl-Tab`) | Next buffer/tab |
-| `Shift-H` (or `Ctrl-Shift-Tab`) | Previous buffer/tab |
-| `Space x` | Close current buffer |
-
-### Editing & Commenting
-
-| Key | Action |
-|-----|--------|
-| `Ctrl-/` (or `Ctrl-_`) | Smart comment toggle: Multi-line block (`/* */`) or single-line (`#`) |
-| `Ctrl-n` | Multi-cursor (select word, press again for next) |
-
-### Terminal
-
-| Key | Action |
-|-----|--------|
-| `Space t` | Toggle floating terminal |
-| `Ctrl-\ Ctrl-n` | Exit terminal mode (while terminal is open) |
-
-### LSP (active in code files)
-
-| Key | Action |
-|-----|--------|
-| `gd` | Go to definition |
-| `K` | Hover documentation |
-| `gr` | Find references |
-| `Space r n` | Rename symbol |
-| `Space c a` | Code actions |
-| `Space d n` | Next diagnostic |
-| `Space d p` | Previous diagnostic |
-| `Space d d` | Show diagnostic popup |
-
-### AI
-
-| Key | Action |
-|-----|--------|
-| `Ctrl-l` | Accept Copilot suggestion |
-| `Space c c` | Toggle Copilot Chat |
-| `Space c e` | Copilot: explain selection |
-
-### Web Dev
-
-| Key | Action |
-|-----|--------|
-| `Space m p` | Toggle Markdown Preview |
-| `Space l s` | Start Live Server |
-| `Space l x` | Stop Live Server |
-
-### General
-
-| Key | Action |
-|-----|--------|
-| `Space q` | Force quit Neovim |
-
----
-
-## 21. Plugin Manager (Lazy.nvim)
-
-Lazy.nvim handles installing, updating, and removing plugins.
-
-### Open the Lazy UI
-
-```vim
-:Lazy
-```
-
-A window shows all installed plugins with their load times.
-
-### Common Lazy commands
-
-| Command | Action |
-|---------|--------|
-| `:Lazy` | Open the plugin manager UI |
-| `:Lazy sync` | Install missing plugins + update + clean unused |
-| `:Lazy update` | Update all plugins to latest versions |
-| `:Lazy clean` | Remove plugins no longer in your config |
-| `:Lazy profile` | Show startup time per plugin (find slow plugins) |
-| `:Lazy health` | Check for problems |
-
-### Inside the Lazy UI
-
-| Key | Action |
-|-----|--------|
-| `U` | Update all plugins |
-| `S` | Sync |
-| `x` | Clean unused plugins |
-| `q` | Close |
-
-### Plugin lockfile
-
-`lazy-lock.json` records the exact version of every installed plugin. This means:
-- Your config is reproducible on any machine
-- Updates don't break things unexpectedly
-- You can roll back by restoring this file
-
----
-
-## 22. Configuration File Structure
-
-```
-~/.config/nvim/
-├── init.lua                    ← Entry point. Loads everything else.
-├── lua/
-│   ├── core/
-│   │   ├── options.lua         ← Editor settings (tabs, numbers, clipboard…)
-│   │   ├── keymaps.lua         ← All keybindings
-│   │   └── autocmds.lua        ← UI state machine (Explorer+Alpha logic)
-│   └── plugins/
-│       ├── init.lua            ← Lazy.nvim bootstrap + imports
-│       ├── snacks.lua          ← Explorer, Picker, Notifier, Zen
-│       ├── ui.lua              ← Catppuccin, Alpha, Bufferline, Lualine, ToggleTerm, Oil
-│       ├── lsp.lua             ← Mason, LSPconfig, Conform, Blink.cmp
-│       ├── editor.lua          ← Treesitter, Mini, Neoscroll, SmoothCursor, Visual-Multi
-│       ├── git.lua             ← Gitsigns, Git-blame
-│       └── ai.lua              ← Copilot, CopilotChat
-├── screenshots/
-├── README.md
-├── GUIDE.md                    ← This file
-├── lazy-lock.json
-└── LICENSE
-```
-
-### What to edit for common changes
-
-| I want to… | Edit this file |
-|-----------|---------------|
-| Change a keymap | `lua/core/keymaps.lua` |
-| Change editor behavior (tabs, numbers…) | `lua/core/options.lua` |
-| Add a plugin | `lua/plugins/<relevant-file>.lua` |
-| Change the colorscheme | `lua/plugins/ui.lua` (the catppuccin section) |
-| Add a new LSP | `lua/plugins/lsp.lua` |
-| Change the dashboard header | `lua/plugins/ui.lua` (the alpha section) |
-| Change notification timeout | `lua/plugins/snacks.lua` |
-| Change terminal shell | `lua/plugins/ui.lua` (the toggleterm section) |
-
----
-
-## 23. How to Add a Plugin
-
-1. Find the plugin on GitHub (e.g. `github.com/username/cool-plugin`)
-
-2. Open the relevant file in `lua/plugins/`. For example, if it's an editor tool, open `lua/plugins/editor.lua`.
-
-3. Add an entry to the return table:
-
+### What is disabled in `lua/plugins/init.lua`?
 ```lua
--- lua/plugins/editor.lua
-
-return {
-  -- ... existing plugins ...
-
-  -- Add this:
-  {
-    "username/cool-plugin",   -- The GitHub repo path
-    event = "VeryLazy",       -- Load after startup (optional)
-    config = function()
-      require("cool-plugin").setup({
-        -- plugin options go here
-      })
-    end,
+performance = {
+  rtp = {
+    disabled_plugins = {
+      "gzip",        -- legacy gzip file buffer loader
+      "tarPlugin",   -- legacy tar file viewer
+      "tohtml",      -- legacy export buffer to HTML
+      "zipPlugin",   -- legacy zip file viewer
+    },
   },
 }
 ```
 
-4. Save the file and run:
-
-```vim
-:Lazy sync
-```
-
-The plugin installs automatically.
-
-### Lazy loading options (the `event` field)
-
-| Value | When it loads |
-|-------|-------------|
-| `"VeryLazy"` | After the UI is ready (good default for most plugins) |
-| `"BufReadPost"` | When you open a file |
-| `"InsertEnter"` | When you enter INSERT mode |
-| `{ "BufReadPost", "BufNewFile" }` | When you open any file |
-| `cmd = "CommandName"` | Only when that command is run |
-| `keys = "<leader>x"` | Only when that key is pressed |
-| `ft = "lua"` | Only for that filetype |
-| _(none / `lazy = false`)_ | At startup, always |
+### How to re-enable them
+If you work with zip or tar archives directly inside Neovim buffers:
+1. Open `lua/plugins/init.lua`.
+2. Delete or comment out the respective plugin from the `disabled_plugins` table:
+   ```lua
+   disabled_plugins = {
+     "gzip",
+     -- "tarPlugin",
+     "tohtml",
+     -- "zipPlugin",
+   },
+   ```
+3. Save and restart Neovim.
 
 ---
 
-## 24. How to Add a New LSP
+## 22. Complete Keymap Reference
 
-1. Find the server name on the mason-lspconfig list:
-   https://github.com/williamboman/mason-lspconfig.nvim#available-lsp-servers
-
-2. Open `lua/plugins/lsp.lua`
-
-3. In the `mason-lspconfig` section, add to `ensure_installed`:
-
-```lua
-ensure_installed = {
-  "lua_ls",
-  "ts_ls",
-  "html",
-  "cssls",
-  "pyright",  -- ← add Python LSP here, for example
-},
-```
-
-4. In the `nvim-lspconfig` section, add to the `servers` table:
-
-```lua
-local servers = {
-  lua_ls  = { ... },
-  ts_ls   = {},
-  html    = {},
-  cssls   = {},
-  pyright = {},  -- ← add this
-}
-```
-
-5. Save and run `:Lazy sync`. Mason will install `pyright` automatically.
+| Key Combination | Modes | Description |
+|---|---|---|
+| `<leader>e` | `n` | Toggle file explorer sidebar |
+| `-` or `<leader>o` | `n` | Open directory in Oil |
+| `<C-s>` | `n`, `i`, `x` | Save file |
+| `<leader>wh/wj/wk/wl` | `n` | Navigate split windows |
+| `<C-h/j/k/l>` | `n` | Navigate split windows directly |
+| `<S-l>` / `<S-h>` | `n` | Next / previous buffer tab |
+| `<C-Tab>` / `<C-S-Tab>` | `n` | Next / previous buffer tab |
+| `]b` / `[b` | `n` | Next / previous buffer |
+| `<leader>x` | `n` | Close buffer |
+| `<leader>q` | `n` | Safe quit Neovim (`:qa`) |
+| `<leader>Q` | `n` | Force quit Neovim (`:qa!`) |
+| `<leader>ff` | `n` | Find project files |
+| `<leader>fg` | `n` | Live grep search |
+| `<leader>fr` | `n` | Recent files |
+| `<leader>fp` | `n` | Command palette |
+| `<leader>fb` | `n` | Buffer switcher |
+| `<leader>fs` | `n` | LSP symbols in file |
+| `<leader>fd` | `n` | Diagnostics list |
+| `<leader>fw` | `n`, `x` | Grep word under cursor |
+| `<leader>fk` | `n` | Find active keymaps |
+| `<leader>g` | `n` | Global file search ($HOME) |
+| `<leader>sr` | `n`, `v` | Project search & replace (Grug-far) |
+| `<F2>` | `n` | Rename symbol |
+| `<F12>` / `gd` | `n` | Go to definition |
+| `<S-F12>` | `n` | Find references |
+| `<C-.>` | `n`, `v` | Quick fix / Code action |
+| `<leader>cf` | `n` | Format document |
+| `<Alt + Up/Down>` | `n`, `v` | Move line or selection up/down |
+| `<Ctrl + />` | `n`, `v` | Toggle line comment |
+| `<leader>/` | `n`, `v` | Toggle block comment |
+| `<Ctrl + n>` | `n` | Start / advance multi-cursor |
+| `<leader>t` / `<C-\`>` | `n`, `t` | Toggle bottom terminal |
+| `<leader>qs` | `n` | Restore session |
+| `<leader>ql` | `n` | Restore last session |
+| `<leader>dt` / `<leader>xx` | `n` | Toggle Trouble problems panel |
+| `<leader>ls` / `<leader>lx` | `n` | Start / Stop Live Server |
+| `<leader>mp` | `n` | Toggle Markdown Preview |
+| `<leader>cc` / `<leader>ce` | `n`, `v` | Toggle CopilotChat / Explain code |
 
 ---
 
-## 25. Troubleshooting
+## 23. Plugin Manager (Lazy.nvim)
 
-### Icons look like boxes or question marks
+- **`:Lazy`**: Opens the visual plugin manager.
+- **`:Lazy sync`**: Downloads missing plugins, cleans unused plugins, and updates existing ones.
+- **`:Lazy profile`**: Inspects startup times per plugin.
+- `lazy-lock.json` pins exact commit hashes for complete cross-machine reproducibility.
 
-Your terminal font is not a Nerd Font.  
-Fix: Install JetBrainsMono Nerd Font and set it in Alacritty config.
+---
 
-### ASCII art on dashboard looks broken
+## 24. Configuration File Structure
 
-Same as above — Nerd Font required.
-
-### Clipboard doesn't work
-
-Install `xclip` (X11) or `wl-clipboard` (Wayland):
-
-```bash
-sudo apt install xclip        # X11
-sudo apt install wl-clipboard  # Wayland
+```text
+~/.config/nvim/
+├── init.lua                   ← Entry point, vim.loader
+├── lua/
+│   ├── core/
+│   │   ├── options.lua        ← Editor settings (tabs, numbers, clipboard, scrolloff)
+│   │   ├── keymaps.lua        ← All custom shortcuts & VS Code mappings
+│   │   └── autocmds.lua       ← UI state machine (Explorer ↔ Alpha, safe ghost-save)
+│   └── plugins/
+│       ├── init.lua           ← Lazy bootstrap & performance.rtp.disabled_plugins
+│       ├── snacks.lua         ← Explorer, Pickers, Notifier, Indent
+│       ├── ui.lua             ← Catppuccin, Alpha, Bufferline, Lualine, ToggleTerm, Oil, Trouble, Dropbar, Persistence
+│       ├── lsp.lua            ← Mason, LSPConfig, Conform, Blink.cmp, Tiny-inline-diagnostic
+│       ├── editor.lua         ← Treesitter, Context, Autotag, Mini, Comment, Grug-Far, Highlight-Colors
+│       ├── git.lua            ← Gitsigns, Git-blame
+│       ├── ai.lua             ← Copilot, CopilotChat
+│       └── snippets.lua       ← LuaSnip, friendly-snippets
 ```
 
-### Colors look wrong / no transparency
+---
 
-1. Make sure your terminal emulator supports 24-bit color
-2. In Alacritty, set `TERM=alacritty` or ensure `$COLORTERM=truecolor` is set
-3. The config already sets `vim.opt.termguicolors = true`
+## 25. Troubleshooting & Health Checks
 
-### Plugin errors on startup
-
-```vim
-:Lazy sync
-```
-
-This reinstalls broken/missing plugins.
-
-### LSP not working
-
-```vim
-:LspInfo
-```
-
-Check if a server is attached. If not:
-
-```vim
-:Mason
-```
-
-Make sure the server is installed (green checkmark).
-
-### Treesitter highlighting wrong
-
-```vim
-:TSUpdate
-```
-
-This updates all language parsers.
-
-### General health check
-
+### Check System & Plugin Health
 ```vim
 :checkhealth
+:checkhealth vim.lsp
 ```
+Inspects all active language servers, node runtime, clipboard providers, and plugin dependencies.
 
-Shows a full health report for Neovim and all plugins. Red items need fixing, yellow items are warnings.
+### Broken Icons or ASCII Art
+If icons look like empty rectangles or question marks, ensure your terminal font is configured with **JetBrainsMono Nerd Font**.
 
-### View error messages
-
-```vim
-:messages
+### Clipboard Issues
+Ensure `xclip` is installed on X11 or `wl-clipboard` is installed on Wayland:
+```bash
+sudo apt install xclip         # X11
+sudo apt install wl-clipboard   # Wayland
 ```
-
-Shows the last N messages/errors that appeared in the command area.
-
-### Alpha dashboard and explorer fighting (wrong window focus)
-
-If your dashboard and explorer ever appear in the wrong positions:
-
-```vim
-:qa
-nvim
-```
-
-A fresh start always resolves layout issues. The state machine in `autocmds.lua` handles startup correctly.
 
 ---
 
 ## 26. Vim Motions Cheat Sheet
 
-These are standard Vim commands that work everywhere.
+### Text Objects
+Combine with `d` (delete), `c` (change), `y` (copy), `v` (select):
+- `iw`: Inner word
+- `aw`: Word with surrounding space
+- `i"`: Inside double quotes
+- `i(`: Inside parentheses
+- `i{`: Inside curly brackets
+- `ip`: Inner paragraph
 
-### Text objects (combine with `d`, `c`, `y`, `v`)
-
-| Object | Selects |
-|--------|---------|
-| `iw` | inner word (just the word) |
-| `aw` | a word (word + space) |
-| `i"` | inside `"..."` |
-| `a"` | `"..."` including the quotes |
-| `i(` | inside `(...)` |
-| `i[` | inside `[...]` |
-| `i{` | inside `{...}` |
-| `ip` | inner paragraph |
-
-Examples:
-- `diw` = delete inner word
-- `ci"` = change inside quotes (delete + enter INSERT)
-- `yi(` = yank inside parentheses
-- `va{` = visually select `{...}` including the braces
-
-### Repeat & counts
-
-| Pattern | Meaning |
-|---------|---------|
-| `5j` | Move down 5 lines |
-| `3dd` | Delete 3 lines |
-| `2w` | Jump forward 2 words |
-| `.` | Repeat the last change |
-
-### Marks (bookmarks)
-
-| Key | Action |
-|-----|--------|
-| `ma` | Set mark `a` at current position |
-| `` `a `` | Jump back to mark `a` |
-| `''` | Jump back to last position before a jump |
-
-### Replace
-
-```vim
-:%s/old/new/g          " Replace all occurrences in the file
-:%s/old/new/gc         " Replace with confirmation for each
-:10,20s/old/new/g      " Replace only on lines 10–20
-```
-
-### Macros (record and replay actions)
-
-1. `qa` — start recording a macro into register `a`
-2. Do your edits
-3. `q` — stop recording
-4. `@a` — play the macro
-5. `5@a` — play it 5 times
-
----
-
-*NEOVIM — built with Neovim + Lua on Debian 13 + KDE Plasma*
+### Repetition & Counts
+- `5j`: Move down 5 lines
+- `3dd`: Delete 3 lines
+- `.`: Repeat last change
