@@ -1,126 +1,129 @@
--- ============================================================
---  core/keymaps.lua
---  All custom keybindings. Leader = Space.
---  Format: map(mode, keys, action, description)
--- ============================================================
-
 local map = vim.keymap.set
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- ── File Explorer ─────────────────────────────────────────────
--- <leader>e → opens/closes the Snacks sidebar file tree.
--- The actual open/close logic lives in core/autocmds.lua (the state machine).
+local pick = function(name, opts)
+  return function()
+    Snacks.picker[name](opts or {})
+  end
+end
+
+-- File Explorer & Oil
 map("n", "<leader>e", function()
-	-- We call the toggle helper defined in autocmds.lua
-	-- It is exposed as a global so keymaps.lua stays clean.
-	-- FIX: renamed from _G.ReclaimX_ToggleExplorer → _G.ToggleExplorer
-	if _G.ToggleExplorer then
-		_G.ToggleExplorer()
-	end
+  if _G.ToggleExplorer then
+    _G.ToggleExplorer()
+  end
 end, { desc = "Toggle Sidebar Explorer" })
 
--- - → open the PARENT directory of the current file in Oil
--- Think of it like a file-manager buffer you can edit.
 map("n", "-", "<cmd>Oil<CR>", { desc = "Open Parent Directory (Oil)" })
+map("n", "<leader>o", "<cmd>Oil<CR>", { desc = "Open Parent Directory (Oil)" })
 
--- ── Global file search (home directory, ivy layout) ──────────
-map("n", "<leader>g", function()
-	Snacks.picker.files({
-		-- FIX: vim.loop.os_homedir() deprecated in Neovim 0.10+
-		-- vim.uv is the correct alias for the libuv bindings
-		cwd = vim.uv.os_homedir(),
-		hidden = true,
-		ignored = true,
-		layout = { preset = "ivy" },
-	})
-end, { desc = "Global File Search (Home)" })
+-- Project & File Search (Snacks Picker)
+map("n", "<leader>ff", pick("files", { cwd = vim.fn.getcwd(), hidden = true, ignored = false }), { desc = "Find Project Files" })
+map("n", "<leader>fg", pick("grep", { cwd = vim.fn.getcwd(), hidden = true, ignored = false }), { desc = "Live Grep Project" })
+map("n", "<leader>fr", pick("recent"), { desc = "Recent Files" })
+map("n", "<leader>fp", pick("commands"), { desc = "Command Palette" })
+map("n", "<leader>fb", pick("buffers"), { desc = "Open Buffers" })
+map("n", "<leader>fs", pick("lsp_symbols"), { desc = "Symbols in File" })
+map("n", "<leader>fd", pick("diagnostics"), { desc = "Diagnostics Picker" })
+map({ "n", "x" }, "<leader>fw", pick("grep_word"), { desc = "Grep Word Under Cursor" })
+map("n", "<leader>fk", pick("keymaps"), { desc = "Find Keymaps" })
 
--- ── Project search ────────────────────────────────────────────
--- <leader>ff → fuzzy find files in the current working directory
-map("n", "<leader>ff", function()
-	Snacks.picker.files({ cwd = vim.fn.getcwd(), hidden = true, ignored = true })
-end, { desc = "Find Project Files" })
+-- Global file search (home directory without indexing huge caches)
+map("n", "<leader>g", pick("files", {
+  cwd = vim.uv.os_homedir(),
+  hidden = false,
+  ignored = false,
+  layout = { preset = "ivy" },
+}), { desc = "Global File Search (Home)" })
 
--- <leader>fg → search for text inside files (requires ripgrep)
-map("n", "<leader>fg", function()
-	Snacks.picker.grep({ cwd = vim.fn.getcwd(), hidden = true, ignored = true })
-end, { desc = "Live Grep Project" })
+-- Project Search and Replace (Grug-far)
+map({ "n", "v" }, "<leader>sr", "<cmd>GrugFar<CR>", { desc = "Search and Replace (GrugFar)" })
 
--- <leader>fr → files you opened recently across all sessions
-map("n", "<leader>fr", function()
-	Snacks.picker.recent()
-end, { desc = "Recent Files" })
+-- Window Navigation (grouped under <leader>w to prevent delays on <leader>l)
+map("n", "<leader>wh", "<C-w>h", { desc = "Focus Window Left" })
+map("n", "<leader>wj", "<C-w>j", { desc = "Focus Window Down" })
+map("n", "<leader>wk", "<C-w>k", { desc = "Focus Window Up" })
+map("n", "<leader>wl", "<C-w>l", { desc = "Focus Window Right" })
+map("n", "<C-h>", "<C-w>h", { desc = "Focus Window Left" })
+map("n", "<C-j>", "<C-w>j", { desc = "Focus Window Down" })
+map("n", "<C-k>", "<C-w>k", { desc = "Focus Window Up" })
+map("n", "<C-l>", "<C-w>l", { desc = "Focus Window Right" })
 
--- ── Window navigation (split management) ─────────────────────
--- Move focus between open split windows without reaching for the mouse.
-map("n", "<leader>h", "<C-w>h", { desc = "Focus Window Left" })
-map("n", "<leader>l", "<C-w>l", { desc = "Focus Window Right" })
-map("n", "<leader>j", "<C-w>j", { desc = "Focus Window Down" })
-map("n", "<leader>k", "<C-w>k", { desc = "Focus Window Up" })
-
--- ── Buffer navigation ─────────────────────────────────────────
--- Shift+L / Shift+H (or Ctrl+Tab / Ctrl+Shift+Tab) cycles through open file tabs (bufferline).
+-- Buffer Navigation
 map("n", "<S-l>", ":BufferLineCycleNext<CR>", { desc = "Next Buffer Tab" })
 map("n", "<S-h>", ":BufferLineCyclePrev<CR>", { desc = "Prev Buffer Tab" })
 map("n", "<C-Tab>", ":BufferLineCycleNext<CR>", { desc = "Next Buffer Tab (Ctrl+Tab)" })
 map("n", "<C-S-Tab>", ":BufferLineCyclePrev<CR>", { desc = "Prev Buffer Tab (Ctrl+Shift+Tab)" })
+map("n", "]b", "<cmd>bnext<CR>", { desc = "Next Buffer" })
+map("n", "[b", "<cmd>bprev<CR>", { desc = "Previous Buffer" })
+map("n", "<leader>x", "<cmd>bdelete<CR>", { desc = "Close Current Buffer" })
 
--- <leader>x → close the current buffer without closing the window.
--- The autocmd in autocmds.lua then restores the Alpha dashboard automatically.
-map("n", "<leader>x", ":bdelete<CR>", { desc = "Close Current Buffer" })
+-- VS Code Muscle Memory Shortcuts
+map({ "n", "i", "x" }, "<C-s>", "<cmd>silent! update<CR>", { desc = "Save File" })
+map("n", "<F2>", vim.lsp.buf.rename, { desc = "Rename Symbol" })
+map("n", "<F12>", vim.lsp.buf.definition, { desc = "Go to Definition" })
+map("n", "<S-F12>", vim.lsp.buf.references, { desc = "Find References" })
+map({ "n", "v" }, "<C-.>", vim.lsp.buf.code_action, { desc = "Quick Fix / Code Action" })
+map("n", "<leader>cf", function()
+  require("conform").format({ lsp_format = "fallback" })
+end, { desc = "Format Document" })
 
--- ── Selection with Shift + Arrow keys (VS Code muscle memory) ─
--- Normal mode: Shift + Arrows starts visual selection
+-- Sessions (Persistence)
+map("n", "<leader>qs", function()
+  require("persistence").load()
+end, { desc = "Restore Session" })
+map("n", "<leader>ql", function()
+  require("persistence").load({ last = true })
+end, { desc = "Restore Last Session" })
+map("n", "<leader>qd", function()
+  require("persistence").stop()
+end, { desc = "Don't Save Current Session" })
+
+-- Selection with Shift + Arrow keys
 map("n", "<S-Up>", "v<Up>", { desc = "Select Up" })
 map("n", "<S-Down>", "v<Down>", { desc = "Select Down" })
 map("n", "<S-Left>", "v<Left>", { desc = "Select Left" })
 map("n", "<S-Right>", "v<Right>", { desc = "Select Right" })
 
--- Visual mode: Shift + Arrows extends selection
 map("v", "<S-Up>", "<Up>", { desc = "Extend Selection Up" })
 map("v", "<S-Down>", "<Down>", { desc = "Extend Selection Down" })
 map("v", "<S-Left>", "<Left>", { desc = "Extend Selection Left" })
 map("v", "<S-Right>", "<Right>", { desc = "Extend Selection Right" })
 
--- Insert mode: Shift + Arrows starts visual selection from cursor
 map("i", "<S-Up>", "<Esc>v<Up>", { desc = "Select Up" })
 map("i", "<S-Down>", "<Esc>v<Down>", { desc = "Select Down" })
 map("i", "<S-Left>", "<Esc>v<Left>", { desc = "Select Left" })
 map("i", "<S-Right>", "<Esc>v<Right>", { desc = "Select Right" })
 
--- ── Terminal (VS Code style bottom panel) ────────────────────
--- <leader>t or Ctrl+` toggles the bottom terminal panel.
--- While typing in terminal: Ctrl+` or Ctrl+t hides it immediately.
--- Press Esc Esc to enter normal mode in terminal to scroll or copy text.
--- When hidden, background commands keep running.
--- Type 'exit' (or Ctrl+d) in the terminal to terminate it.
+-- Terminal (ToggleTerm)
 map("n", "<leader>t", "<cmd>ToggleTerm<CR>", { desc = "Toggle Terminal Panel (Bottom)" })
 map("n", "<C-`>", "<cmd>ToggleTerm<CR>", { desc = "Toggle Terminal Panel (Ctrl+`)" })
 map("t", "<C-`>", "<cmd>ToggleTerm<CR>", { desc = "Hide Terminal Panel (Ctrl+`)" })
 map("t", "<C-t>", "<cmd>ToggleTerm<CR>", { desc = "Hide Terminal Panel (Ctrl+t)" })
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit Terminal Mode to Normal Mode" })
 
--- ── AI / Copilot Chat ─────────────────────────────────────────
+-- AI / Copilot Chat
 map({ "n", "v" }, "<leader>cc", "<cmd>CopilotChatToggle<CR>", { desc = "Toggle Copilot Chat" })
 map({ "n", "v" }, "<leader>ce", "<cmd>CopilotChatExplain<CR>", { desc = "Copilot: Explain Code" })
 
--- ── Diagnostics (LSP error/warning navigation) ───────────────
--- Jump between errors/warnings detected by the language server.
+-- Diagnostics & Problems Panel (Trouble)
 map("n", "<leader>dn", function()
-	vim.diagnostic.jump({ count = 1, float = true })
+  vim.diagnostic.jump({ count = 1, float = true })
 end, { desc = "Next Diagnostic" })
 map("n", "<leader>dp", function()
-	vim.diagnostic.jump({ count = -1, float = true })
+  vim.diagnostic.jump({ count = -1, float = true })
 end, { desc = "Prev Diagnostic" })
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show Diagnostic Popup" })
+map("n", "<leader>dt", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Toggle Problems Panel (Trouble)" })
+map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Toggle Problems Panel (Trouble)" })
 
--- ── Web Dev tools ─────────────────────────────────────────────
+-- Web Dev Tools
 map("n", "<leader>mp", ":MarkdownPreviewToggle<CR>", { desc = "Toggle Markdown Preview" })
 map("n", "<leader>ls", ":LiveServerStart<CR>", { desc = "Start Live Server" })
 map("n", "<leader>lx", ":LiveServerStop<CR>", { desc = "Stop Live Server" })
 
--- ── Quick quit ────────────────────────────────────────────────
--- Force-quit ALL windows. Useful when stuck.
-map("n", "<leader>q", ":qa!<CR>", { desc = "Quit Neovim (force)" })
+-- Quit Neovim (safe by default, force with Shift+Q)
+map("n", "<leader>q", "<cmd>qa<CR>", { desc = "Quit Neovim" })
+map("n", "<leader>Q", "<cmd>qa!<CR>", { desc = "Quit Neovim (Force)" })
