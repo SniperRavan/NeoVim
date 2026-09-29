@@ -1,240 +1,214 @@
--- ============================================================
---  plugins/ui.lua
---  All purely visual / UI plugins:
---  Alpha (dashboard), Bufferline (tabs), Lualine (statusline),
---  ToggleTerm (floating terminal), Oil (filesystem editor),
---  Markdown Preview, Live Server, Catppuccin theme
--- ============================================================
-
 return {
+  -- Catppuccin theme
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    priority = 1000,
+    lazy = false,
+    config = function()
+      require("catppuccin").setup({
+        flavour = "mocha",
+        transparent_background = true,
+        integrations = {
+          bufferline = true,
+          gitsigns = true,
+          treesitter = true,
+          which_key = true,
+          blink_cmp = true,
+          mini = { enabled = true },
+          snacks = true,
+        },
+      })
+      vim.cmd.colorscheme("catppuccin-mocha")
+    end,
+  },
 
-	-- ── Catppuccin: the colorscheme ────────────────────────────
-	-- "mocha" is the darkest flavor. transparent_background = true
-	-- lets your terminal's background color show through.
-	{
-		"catppuccin/nvim",
-		name = "catppuccin",
-		priority = 1000, -- Load the theme before any other plugin
-		lazy = false,
-		config = function()
-			require("catppuccin").setup({
-				flavour = "mocha",
-				transparent_background = true, -- ← makes the glass/cyberpunk look work
+  -- Alpha startup dashboard
+  {
+    "goolord/alpha-nvim",
+    lazy = false,
+    priority = 900,
+    config = function()
+      local alpha = require("alpha")
+      local dashboard = require("alpha.themes.dashboard")
 
-				integrations = {
-					bufferline = true,
-					gitsigns = true,
-					treesitter = true,
-					which_key = true,
-					blink_cmp = true,
-					mini = { enabled = true },
-					snacks = true,
-				},
-			})
-			vim.cmd.colorscheme("catppuccin-mocha")
-		end,
-	},
+      dashboard.section.header.val = {
+        [[                                                                       ]],
+        [[       ████ ██████           █████      ██                     ]],
+        [[      ███████████             █████                             ]],
+        [[      █████████ ███████████████████ ███   ███████████   ]],
+        [[     █████████  ███    █████████████ █████ ██████████████   ]],
+        [[    █████████ ██████████ █████████ █████ █████ ████ █████   ]],
+        [[  ███████████ ███    ███ █████████ █████ █████ ████ █████  ]],
+        [[ ██████  █████████████████████ ████ █████ █████ ████ ██████ ]],
+      }
 
-	-- ── Alpha: startup dashboard ────────────────────────────────
-	-- Shows a custom ASCII header + buttons when Neovim opens.
-	-- Buttons call Snacks pickers instead of Telescope.
-	{
-		"goolord/alpha-nvim",
-		lazy = false,
-		priority = 900,
+      dashboard.section.buttons.val = {
+        dashboard.button("f f", "󰈔  Find File", ":lua Snacks.picker.files()<CR>"),
+        dashboard.button("f n", "  New File", ":ene <BAR> startinsert <CR>"),
+        dashboard.button("f r", "  Recent Files", ":lua Snacks.picker.recent()<CR>"),
+        dashboard.button("f g", "󰈭  Find Text", ":lua Snacks.picker.grep()<CR>"),
+        dashboard.button("s", "󰦛  Restore Session", ":lua require('persistence').load()<CR>"),
+        dashboard.button("f c", "  Configuration", ":e $MYVIMRC<CR>"),
+        dashboard.button("q", "󰩈  Quit", ":qa<CR>"),
+      }
 
-		config = function()
-			local alpha = require("alpha")
-			local dashboard = require("alpha.themes.dashboard")
+      local tagline = {
+        type = "text",
+        val = "Your ideas, in code.",
+        opts = { position = "center", hl = "Comment" },
+      }
 
-			-- ── ASCII Header ──────────────────────────────────────
-			-- TIP: If this looks broken, your terminal font does NOT
-			-- support box-drawing characters. Install a Nerd Font and
-			-- set it in Alacritty's config: font.normal.family.
-			-- Recommended: JetBrainsMono Nerd Font
-			dashboard.section.header.val = {
-				[[                                                                       ]],
-				[[       ████ ██████           █████      ██                     ]],
-				[[      ███████████             █████                             ]],
-				[[      █████████ ███████████████████ ███   ███████████   ]],
-				[[     █████████  ███    █████████████ █████ ██████████████   ]],
-				[[    █████████ ██████████ █████████ █████ █████ ████ █████   ]],
-				[[  ███████████ ███    ███ █████████ █████ █████ ████ █████  ]],
-				[[ ██████  █████████████████████ ████ █████ █████ ████ ██████ ]],
-			}
+      local v = vim.version()
+      local version_str = "Neovim v" .. v.major .. "." .. v.minor .. "." .. v.patch
+      local version_footer = {
+        type = "text",
+        val = "🟢 Ready                           " .. version_str .. "  ",
+        opts = { position = "center", hl = "Comment" },
+      }
 
-			-- ── Dashboard buttons ────────────────────────────────
-			-- Each button: display text, shortcut shown, what it does
-			dashboard.section.buttons.val = {
-				dashboard.button("f f", "󰈔  Find File", ":lua Snacks.picker.files()<CR>"),
-				dashboard.button("f n", "  New File", ":ene <BAR> startinsert <CR>"),
-				dashboard.button("f r", "  Recent Files", ":lua Snacks.picker.recent()<CR>"),
-				dashboard.button("f g", "󰈭  Find Text", ":lua Snacks.picker.grep()<CR>"),
-				dashboard.button("f c", "  Configuration", ":e $MYVIMRC<CR>"),
-				dashboard.button("q", "󰩈  Quit", ":qa<CR>"),
-			}
+      dashboard.config.layout = {
+        { type = "padding", val = 2 },
+        dashboard.section.header,
+        { type = "padding", val = 2 },
+        dashboard.section.buttons,
+        { type = "padding", val = 2 },
+        tagline,
+        { type = "padding", val = 1 },
+        version_footer,
+      }
 
-			local tagline = {
-				type = "text",
-				val = "Your ideas, in code.",
-				opts = { position = "center", hl = "Comment" },
-			}
+      alpha.setup(dashboard.opts)
+    end,
+  },
 
-			local v = vim.version()
-			local version_str = "Neovim v" .. v.major .. "." .. v.minor .. "." .. v.patch
-			local version_footer = {
-				type = "text",
-				val = "🟢 No sessions                      " .. version_str .. "  ",
-				opts = { position = "center", hl = "Comment" },
-			}
+  -- Bufferline tab bar
+  {
+    "akinsho/bufferline.nvim",
+    dependencies = "echasnovski/mini.icons",
+    event = "VeryLazy",
+    config = function()
+      require("bufferline").setup({
+        options = {
+          diagnostics = "nvim_lsp",
+          show_buffer_close_icons = true,
+          show_close_icon = true,
+          offsets = {
+            {
+              filetype = "snacks_layout_box",
+              text = "File Explorer",
+              highlight = "Directory",
+              separator = true,
+            },
+          },
+          custom_filter = function(buf)
+            local ft = vim.bo[buf].filetype
+            return ft ~= "alpha" and ft ~= "toggleterm" and not (ft:find("snacks") and ft:find("explorer"))
+          end,
+        },
+      })
+    end,
+  },
 
-			dashboard.config.layout = {
-				{ type = "padding", val = 2 },
-				dashboard.section.header,
-				{ type = "padding", val = 2 },
-				dashboard.section.buttons,
-				{ type = "padding", val = 2 },
-				tagline,
-				{ type = "padding", val = 1 },
-				version_footer,
-			}
+  -- Lualine statusline
+  {
+    "nvim-lualine/lualine.nvim",
+    event = "VeryLazy",
+    config = function()
+      require("lualine").setup({
+        options = {
+          theme = "catppuccin-mocha",
+          section_separators = { left = "", right = "" },
+          component_separators = { left = "", right = "" },
+          globalstatus = true,
+        },
+        sections = {
+          lualine_a = { "mode" },
+          lualine_b = { "branch", "diff", "diagnostics" },
+          lualine_c = { { "filename", path = 1 } },
+          lualine_x = { "encoding", "fileformat", "filetype" },
+          lualine_y = { "progress" },
+          lualine_z = { "location" },
+        },
+      })
+    end,
+  },
 
-			alpha.setup(dashboard.opts)
-		end,
-	},
+  -- ToggleTerm bottom terminal panel
+  {
+    "akinsho/toggleterm.nvim",
+    cmd = { "ToggleTerm", "TermExec", "ToggleTermToggleAll" },
+    event = "VeryLazy",
+    config = function()
+      require("toggleterm").setup({
+        size = 15,
+        open_mapping = [[<C-`>]],
+        hide_numbers = true,
+        shade_terminals = false,
+        start_in_insert = true,
+        insert_mappings = true,
+        terminal_mappings = true,
+        persist_size = true,
+        persist_mode = true,
+        direction = "horizontal",
+        close_on_exit = true,
+        shell = vim.o.shell,
+      })
+    end,
+  },
 
-	-- ── Bufferline: tabs at the top of the screen ──────────────
-	-- Each open file appears as a tab. Shift+L / Shift+H to cycle.
-	{
-		"akinsho/bufferline.nvim",
-		dependencies = "echasnovski/mini.icons",
-		event = "VeryLazy",
-		config = function()
-			require("bufferline").setup({
-				options = {
-					show_buffer_close_icons = true,
-					show_close_icon = true,
-					-- Don't show Alpha or explorer in the tab bar
-					custom_filter = function(buf)
-						local ft = vim.bo[buf].filetype
-						-- Filter out alpha, toggleterm, and snacks explorer
-						return ft ~= "alpha" and ft ~= "toggleterm" and not (ft:find("snacks") and ft:find("explorer"))
-					end,
-				},
-			})
-		end,
-	},
+  -- Oil filesystem editor
+  {
+    "stevearc/oil.nvim",
+    cmd = { "Oil" },
+    opts = {
+      default_file_explorer = false,
+      view_options = {
+        show_hidden = true,
+      },
+    },
+  },
 
-	-- ── Lualine: statusline at the bottom ──────────────────────
-	-- Shows: mode, branch, filename, diagnostics, progress, position.
-	--
-	-- FIX: ":LualineNotices" warning was caused by deprecated options.
-	-- Removed: section_separators = "" and component_separators = "".
-	-- These are valid but must be set inside options{} as tables, not strings.
-	-- Empty string is ambiguous — use explicit empty table {} instead.
-	{
-		"nvim-lualine/lualine.nvim",
-		event = "VeryLazy",
-		config = function()
-			require("lualine").setup({
-				options = {
-					theme = "catppuccin-mocha", -- FIX: was "catppuccin" — lualine needs the full flavor name
+  -- Session restoration
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre",
+    opts = {},
+  },
 
-					-- FIX: use tables not strings for separators
-					-- Empty tables = no separator character (flat look)
-					section_separators = { left = "", right = "" },
-					component_separators = { left = "", right = "" },
+  -- Diagnostics and problems list panel
+  {
+    "folke/trouble.nvim",
+    cmd = { "Trouble" },
+    opts = {},
+  },
 
-					globalstatus = true, -- Single statusline (matches opt.laststatus=3)
-				},
-				sections = {
-					lualine_a = { "mode" },
-					lualine_b = { "branch", "diff", "diagnostics" },
-					lualine_c = { { "filename", path = 1 } }, -- path=1 shows relative path
-					lualine_x = { "encoding", "fileformat", "filetype" },
-					lualine_y = { "progress" },
-					lualine_z = { "location" },
-				},
-			})
-		end,
-	},
+  -- Breadcrumbs navigation bar
+  {
+    "Bekaboo/dropbar.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {},
+  },
 
-	-- ── ToggleTerm: VS Code style bottom terminal panel ───────
-	-- <leader>t or Ctrl+` toggles the bottom terminal split.
-	-- Toggling hide preserves running processes in the background.
-	-- Typing 'exit' terminates the shell and closes the window.
-	{
-		"akinsho/toggleterm.nvim",
-		cmd = { "ToggleTerm", "TermExec", "ToggleTermToggleAll" },
-		event = "VeryLazy",
-		config = function()
-			require("toggleterm").setup({
-				size = 15,
-				open_mapping = [[<C-`>]],
-				hide_numbers = true,
-				shade_terminals = false,
-				start_in_insert = true,
-				insert_mappings = true,
-				terminal_mappings = true,
-				persist_size = true,
-				persist_mode = true,
-				direction = "horizontal",
-				close_on_exit = true,
-				shell = vim.o.shell,
-			})
-		end,
-	},
+  -- Markdown live preview
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    build = "cd app && npm install",
+    init = function()
+      vim.g.mkdp_filetypes = { "markdown" }
+      vim.g.mkdp_auto_close = 1
+    end,
+    ft = { "markdown" },
+  },
 
-	-- ── Oil.nvim: edit filesystem like a buffer ─────────────────
-	-- Press - to open the parent directory as a text buffer.
-	-- Rename files by editing the text. Delete lines to delete files.
-	-- Press Enter on a file to open it. Press - again to go up a level.
-	--
-	-- FIX BUG: was `keys = { "-" }` which intercepts the native Vim "-"
-	-- motion during plugin load. Using cmd = { "Oil" } is safer —
-	-- the keymap in keymaps.lua sends <cmd>Oil<CR> which triggers the cmd.
-	{
-		"stevearc/oil.nvim",
-		--	keys = { "-" }, -- ← removed, was stealing native Vim motion
-		cmd = { "Oil" },
-		opts = {
-			default_file_explorer = false, -- Let Snacks handle :edit .
-			view_options = {
-				show_hidden = true, -- Show dotfiles in Oil too
-			},
-		},
-	},
-
-	-- ── Markdown Preview ───────────────────────────────────────
-	-- <leader>mp → opens your markdown file in the browser, live.
-	-- Requires Node.js (it runs a small local server).
-	{
-		"iamcco/markdown-preview.nvim",
-		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-		build = "cd app && npm install",
-		init = function()
-			vim.g.mkdp_filetypes = { "markdown" }
-			vim.g.mkdp_auto_close = 1 -- Close preview tab when you close the md buffer
-		end,
-		ft = { "markdown" },
-	},
-
-	-- ── Live Server ────────────────────────────────────────────
-	-- <leader>ls → starts a live-reloading web server for HTML/CSS/JS.
-	-- <leader>lx → stops it.
-	-- Requires: npm i -g live-server
-	--
-	-- NOTE: live-server.nvim v0.2.0+ removed setup().
-	-- Configuration is done via vim.g.live_server_* globals instead.
-	{
-		"barrett-ruth/live-server.nvim",
-		cmd = { "LiveServerStart", "LiveServerStop" },
-		init = function()
-			-- Port to serve on
-			vim.g.live_server_port = 5500
-
-			-- Open browser automatically when server starts
-			vim.g.live_server_open_browser = 1
-		end,
-	},
+  -- Live Server for web development
+  {
+    "barrett-ruth/live-server.nvim",
+    cmd = { "LiveServerStart", "LiveServerStop" },
+    init = function()
+      vim.g.live_server_port = 5500
+      vim.g.live_server_open_browser = 1
+    end,
+  },
 }
